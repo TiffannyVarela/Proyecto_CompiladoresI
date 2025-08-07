@@ -1,21 +1,24 @@
 #ifndef LEXERRUST_H
 #define LEXERRUST_H
 
+#include "Token.h"
 #include <string>
 #include <vector>
+#include <map>
 
 using namespace std;
 
 class LexerRust {
 public:
-    LexerRust(const vector<string>& tokens);
-    void verifyTokens() const;
+    LexerRust(const string& codigo);
+    vector<Token> analiza();
     ~LexerRust();
 
 private:
-    vector<string> tokens;
-    bool comentarioMultiLine;
-    bool inCadena;
-    bool tokenValido(const string& token) const;
+    string codigo;
+    size_t pos;
+    int line;
+    int column;
+    set<string> palabrasClave;
 };
 #endif // LEXERRUST_H
