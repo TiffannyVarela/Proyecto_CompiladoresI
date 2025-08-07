@@ -24,11 +24,11 @@ fn main() {
 // Funcion que demuestra uso de tipos de datos
 fn tipos_datos() {
     let nombre = "Juan"; // Declara una variable inmutable
-    let edad: i32 = 30;  // Declara una variable con tipo explícito
-    println!("¡Hola, {}! Tienes {} años.", nombre, edad); // Imprime mensaje formateado
+    let edad: i32 = 30;  // Declara una variable con tipo explicito
+    println!("Hola, {}! Tienes {} años.", nombre, edad); // Imprime mensaje formateado
 }
 
-// Funcion que demuestra una estructura condicional
+// Función que demuestra una estructura condicional
 fn condicionales() {
     let numero = 10;
     if numero % 2 == 0 { // Verifica si el numero es par
@@ -77,7 +77,7 @@ fn mapeo() {
 
 // Funcion que muestra uso de estructuras
 fn estructuras() {
-    // Declaración de la estructura Estudiante
+    // Declaracion de la estructura Estudiante
     struct Estudiante {
         nombre: String,
         numero_cuenta: i32,
