@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <set>
 
 using namespace std;
 
@@ -12,6 +13,14 @@ class LexerRust {
 public:
     LexerRust(const string& codigo);
     vector<Token> analiza();
+    void comentarioLinea(vector<Token>& tokens);
+    void comentarioBloque(vector<Token>& tokens);
+    void identificador(vector<Token>& tokens);
+    void numero(vector<Token>& tokens);
+    void cadena(vector<Token>& tokens);
+    void caracter(vector<Token>& tokens);
+    void simbolos(vector<Token>& tokens);
+    void printTokens(vector<Token>& tokens);
     ~LexerRust();
 
 private:
@@ -20,5 +29,6 @@ private:
     int line;
     int column;
     set<string> palabrasClave;
+    set<string> simbolosCompuestos;
 };
 #endif // LEXERRUST_H

@@ -2,17 +2,20 @@
 #include <cctype>
 #include <set>
 #include <iostream>
-//#include <regex>
-//#include <algorithm>
+#include <map>
 
 using namespace std;
 
 LexerRust::LexerRust(const string& codigo) : codigo (codigo), pos(0), line(1), column(1) {
-    palabrasClave = {"as", "async", "await", "break", "const", "continue", "crate", "dyn", "else", 
-        "enum", "extern", "false", "fn", "for", "if", "impl", "in", "let", "loop", 
-        "match", "mod", "move", "mut", "pub", "ref", "return", "self", "Self", 
+    palabrasClave = {"as", "async", "await", "break", "bucle", "const", "condicional",  "continue", "crate", "declaration", "dyn", "else", 
+        "enum", "extern", "false", "fn", "for", "funcion","if", "impl", "in", "let", "loop", 
+        "match", "mod", "move", "mut", "mutable", "None", "pub", "ref", "return", "self", "Self", "Some",
         "static", "struct", "super", "trait", "true", "type", "union", "unsafe", 
         "use", "where", "while"};
+    simbolosCompuestos = {
+        "==", "!=", "<=", ">=", "&&", "||", "+=", "-=", "*=", "/=", "%=", 
+        "->", "::", "..", "..=", "=>", "|=", "&=", "^=", "<<", ">>", "<<=", ">>="
+    };
 }
 
 vector <Token> LexerRust::analiza(){
@@ -35,143 +38,392 @@ vector <Token> LexerRust::analiza(){
             pos++;
             continue;            
         }    
+//Comentarios una sola linea
+        if (c == '/' && pos +1 < codigo.size() && codigo[pos+1] == '/')
+        {
+            comentarioLinea(tokens);
+            continue;
+        }
+//Comentarios de bloque
+        if (c == '/' && pos +1 < codigo.size() && codigo[pos+1] == '*')
+        {
+            comentarioBloque(tokens);
+            continue;
+        }
         
-//Palabras clave
+//Palabras clave e identificadores
         if(isalpha(c) || c == '_'){
-            int inicioCol = column;
-            string lexema;
-            while (pos < codigo.size() && (isalnum(codigo[pos]) || codigo[pos] == '_'))
-            {
-                lexema += codigo[pos++];
-                column++;
-            }
-            Tipo tipo = palabrasClave.count(lexema) ? Tipo::PALABRA_CLAVE : Tipo::IDENTIFICADOR;
-            tokens.push_back({tipo, lexema, line, inicioCol});
+            identificador(tokens);
             continue;            
         } 
 
 //Numeros
         if (isdigit(c))
         {
-            int inicioCol = column;
-            string num;
-            while (pos < codigo.size() && isdigit(codigo[pos]))
-            {
-                num += codigo[pos++];
-                column++;
-            }
-            tokens.push_back({Tipo::NUMERO, num, line, inicioCol});
+            numero(tokens);
             continue;
         }
 
 //Cadena de caracteres
         if (c== '"')
         {
-            int inicioCol = column;
-            string cadena;
-            cadena += codigo[pos++]; //abretura de las comillas
-            column++;
-            bool closed = false;
-            while (pos < codigo.size())
-            {
-                char actual = codigo[pos];
-
-                if (actual == '\\' && pos+1 <codigo.size())
-                {
-                    cadena += codigo[pos++];
-                    cadena += codigo[pos++];
-                    column += 2;
-                    continue;
-                }
-
-                //Fin cadena
-                if (actual == '"')
-                {
-                    cadena += codigo[pos++];
-                    column++;
-                    closed = true;
-                    break;
-                }
-
-                if (actual == '\n')
-                {
-                    line++;
-                    column = 1;
-                }
-                else {
-                    column++;
-                }
-                cadena += codigo[pos++];              
-            }
-            if (!closed)
-            {
-                cerr << "Error: cadena no cerrada en línea " << line << ", columna " << inicioCol << endl;
-            }
-            tokens.push_back({Tipo::CADENA, cadena, line, inicioCol});
+            cadena(tokens);
             continue;
         }
 
 //Comillas simples
         if (c == '\'')
         {
-            int inicioCol = column;
-            string caracter;
-            caracter += codigo[pos++];
-            column++;
-            bool closed = false;
-
-            while (pos < codigo.size())
-            {
-                char actual = codigo[pos];
-
-                if (actual == '\\' && pos+1 < codigo.size())
-                {
-                    caracter += codigo[pos++];
-                    caracter += codigo[pos++];
-                    column +=2;
-                }
-                else{
-                    caracter += codigo[pos++];
-                    column++;
-                }
-
-                if (codigo[pos] == '\'')
-                {
-                    caracter += codigo[pos++];
-                    column++;
-                    closed=true;
-                    break;
-                }               
-            }
-
-            if (!closed)
-            {
-                cerr << "Error: carácter no cerrado en línea " << line << ", columna " << inicioCol << endl;
-            }
-            
-            tokens.push_back({Tipo::CARACTER, caracter, line, inicioCol});
+            caracter(tokens);
             continue;
         }
         
-        static const set<string> validos ={";", ",", "(", ")", "{", "}", "[", "]", "+", "-", "*", "/", "=", "%", "<", ">", "&", "|", "!", "^", ".", ":"};
-        
-        int inicioCol = column;
-        string symbol(1, c);
-        pos++;
-        column++;
-
-        if (validos.count(symbol))
-        {
-            tokens.push_back({Tipo::SIMBOLO, symbol, line, inicioCol});
-        }
-        else{
-            cerr << "Token inválido en línea " << line << ", columna " << inicioCol << ": " << symbol << endl;
-        }
+//Simbolos y operadores
+        simbolos(tokens);
         
     }
 
     tokens.push_back({Tipo::FIN, "", line, column});
     return tokens;
+}
+
+void LexerRust::comentarioLinea(vector<Token>& tokens){
+    int iniLine = line;
+    int iniCol = column;
+    string lex = "//";
+    pos+=2;
+    column+=2;
+
+    while (pos < codigo.size() && codigo[pos] != '\n')
+    {
+        lex += codigo[pos++];
+        column++;
+    }
+    tokens.push_back({Tipo::COMENTARIO, lex, iniLine, iniCol});    
+}
+
+void LexerRust::comentarioBloque(vector<Token>& tokens){
+    int iniLine = line;
+    int iniCol = column;
+    string lex = "/*";
+    pos+=2;
+    column+=2;
+    bool closed = false;
+
+    while (pos < codigo.size())
+    {
+        if (codigo[pos] == '*' && pos +1 < codigo.size() && codigo[pos+1] == '/')
+        {
+            lex += "*/";
+            pos +=2;
+            column +=2;
+            closed = true;
+            break;
+        }
+        
+        if (codigo[pos] =='\n')
+        {
+            line++;
+            column=1;
+        }
+        else{
+            column++;
+        }
+        lex += codigo[pos++];
+    }
+    if (!closed)
+    {
+        cerr<< "Error: comentario de bloque no cerrado en línea " << iniLine << ", columna " << iniCol << endl;
+    }
+    
+    tokens.push_back({Tipo::COMENTARIO, lex, iniLine, iniCol});
+}
+
+void LexerRust::identificador(vector<Token>& tokens){
+    int iniLine = line;
+    int iniCol = column;
+    string lex;
+
+    while (pos < codigo.size() && (isalnum(codigo[pos]) || codigo[pos] == '_'))
+    {
+        lex +=codigo[pos++];
+        column++;
+    }
+
+    Tipo tipo = palabrasClave.count(lex) ? Tipo::PALABRA_CLAVE : Tipo::IDENTIFICADOR;
+    tokens.push_back({tipo, lex, iniLine, iniCol});
+    
+}
+
+void LexerRust::numero(vector<Token>& tokens){
+    int iniLine = line;
+    int iniCol = column;
+    string lex;
+    bool decimal = false;
+    bool cientifico = false; //prueba
+
+    //Entero
+    while (pos < codigo.size() && (isdigit(codigo[pos]) || codigo[pos] == '_'))
+    {
+        if (codigo[pos] != '_')
+        {
+            lex += codigo[pos];
+        }
+        pos++;
+        column++;        
+    }
+
+    //Decimal
+    if (pos < codigo.size() && codigo[pos] == '.')
+    {
+        decimal = true;
+        lex += codigo[pos++];
+        column++;
+
+        while (pos < codigo.size() && (isdigit(codigo[pos]) || codigo[pos] == '_'))
+        {
+            if (codigo[pos] != '_')
+            {
+                lex += codigo[pos];
+            }
+            pos++;
+            column++;
+        }
+    }
+    
+    //Exponencial
+    if (pos < codigo.size() && (codigo[pos] == 'e' || codigo[pos] == 'E'))
+    {
+        cientifico = true;
+        lex += codigo[pos++];
+        column++;
+        if (pos < codigo.size() && (codigo[pos] == '+' || codigo[pos] =='-'))
+        {
+            lex += codigo[pos++];
+            column++;
+        }
+        while (pos < codigo.size() && (isdigit(codigo[pos]) || codigo[pos] == '_'))
+        {
+            if (codigo[pos] != '_')
+            {
+                lex += codigo[pos];
+            }
+            pos++;
+            column++;
+        }
+    }
+    
+    //Tipo de numero
+    Tipo tipo = decimal ? (cientifico ? Tipo::NUMERO_CIENTIFICO : Tipo::NUMERO_DECIMAL) : Tipo::NUMERO_ENTERO;
+
+    tokens.push_back({tipo, lex, iniLine, iniCol});
+}
+
+void LexerRust::cadena(vector<Token>& tokens){
+    int iniLine = line;
+    int iniCol = column;
+    string lex = "\"";
+    pos++;
+    column++;
+    bool closed = false;
+    bool esc = false;
+
+    while (pos < codigo.size())
+    {
+        char actual = codigo[pos];
+
+        if (esc)
+        {
+            lex += actual;
+            pos++;
+            column++;
+            esc = false;
+            continue;
+        }
+
+        if (actual == '\\')
+        {
+            esc = true;
+            lex += actual;
+            pos++;
+            column++;
+            continue;
+        }
+
+        if (actual == '"')
+        {
+            lex += actual;
+            pos++;
+            column++;
+            closed = true;
+            break;
+        }
+
+        if (actual == '\n')
+        {
+            line++;
+            column = 1;
+        }
+        else{
+            column++;
+        }
+        
+        lex += actual;
+        pos++;   
+    }
+
+    if (!closed)
+    {
+        cerr << "Error: cadena no cerrada en línea " << iniLine<< ", columna " << iniCol << endl;
+    }
+    
+    tokens.push_back({Tipo::CADENA, lex, iniLine, iniCol});
+}
+
+void LexerRust::caracter(vector<Token>& tokens){
+    int iniLine = line;
+    int iniCol = column;
+    string lex = "'";
+    pos++;
+    column++;
+    bool closed = false;
+    bool esc = false;
+
+    while (pos < codigo.size())
+    {
+        char actual = codigo[pos];
+
+        if (esc)
+        {
+            lex += actual;
+            pos++;
+            column++;
+            esc = false;
+            continue;
+        }
+
+        if (actual == '\\')
+        {
+            esc = true;
+            lex += actual;
+            pos++;
+            column++;
+            continue;
+        }
+        
+        if (actual == '\'')
+        {
+            lex += actual;
+            pos++;
+            column++;
+            closed = true;
+            break;
+        }
+        
+        column++;
+        lex += actual;
+        pos++;
+    }
+
+    if (!closed)
+    {
+        cerr << "Error: carácter no cerrado en línea " << iniLine << ", columna " << iniCol << endl;
+    }
+    
+    //Caracter Valido
+    if (lex.length() > 4 || (lex.length() == 3 && lex[1] != '\\'))
+    {
+        cerr << "Error: carácter inválido en línea " << iniLine << ", columna " << iniCol << ": " << lex << endl;
+    }
+    
+    tokens.push_back({Tipo::CARACTER, lex, iniLine, iniCol});
+}
+
+void LexerRust::simbolos(vector<Token>& tokens){
+    int iniLine = line;
+    int iniCol = column;
+
+    //Verificar compuestos
+    if (pos +1 < codigo.size())
+    {
+        string doble = string(1, codigo[pos]) + codigo[pos+1];
+
+        if (simbolosCompuestos.count(doble))
+        {
+            tokens.push_back({Tipo::OPERADOR, doble, iniLine, iniCol});
+            pos += 2;
+            column += 2;
+            return;
+        }        
+    }
+    
+    //Individuales
+    char c = codigo[pos];
+
+    switch (c)
+    {
+    case ';':
+    case ',':
+    case '(':
+    case ')':
+    case '{':
+    case '}':
+    case '[':
+    case ']':
+        tokens.push_back({Tipo::PUNTUACION, string(1,c), iniLine, iniCol});
+        break;
+
+    case '+':
+    case '-':
+    case '*':
+    case '/':
+    case '=':    
+    case '%':
+    case '<':
+    case '>':
+    case '&':
+    case '|':    
+    case '!':
+    case '^':
+    case '.':
+    case ':':
+    case '@':
+    case '$':
+    case '?':
+    case '~':
+    case '#':
+        tokens.push_back({Tipo::OPERADOR, string(1,c), iniLine, iniCol});
+        break;
+
+    default:
+        cerr << "Error: símbolo inválido en línea " << line << ", columna " << column << ": " << c << endl;
+        break;
+    }
+    pos++;
+    column++;
+}
+
+void LexerRust::printTokens(vector<Token>& tokens){
+    map<Tipo, string> tipoString = {
+        {Tipo::CADENA, "CADENA"},
+        {Tipo::CARACTER, "CARACTER"},
+        {Tipo::COMENTARIO, "COMENTARIO"},
+        {Tipo::ERROR, "ERROR"},
+        {Tipo::FIN, "FIN"},
+        {Tipo::IDENTIFICADOR, "IDENTIFICADOR"},
+        {Tipo::NUMERO_CIENTIFICO, "NUMERO CIENTIFICO"},
+        {Tipo::NUMERO_DECIMAL, "NUUMERO DECIMAL"},
+        {Tipo::NUMERO_ENTERO, "NUMERO ENTERO"},
+        {Tipo::OPERADOR, "OPERADOR"},
+        {Tipo::PALABRA_CLAVE, "PALABRA CLAVE"},
+        {Tipo::PUNTUACION, "PUNTUACION"},
+        {Tipo::SIMBOLO, "SIMBOLO"}
+    };
+    for (const auto& token : tokens)
+    {
+        cout << "[L:" << token.line << ",C:" << token.column << "] "<< tipoString[token.tipo] << ": " << token.valor << endl;
+    }
+    
 }
 
 LexerRust::~LexerRust() {

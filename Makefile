@@ -5,10 +5,11 @@ CXXFLAGS = -Wall -std=c++17
 
 # Archivos fuente (todos los .cpp)
 SRC = main.cpp \
-      AnalizadorRust.cpp \
       lectura.cpp \
       LexerRust.cpp \
-      ParserRust.cpp
+      ParserRust.cpp \
+	  NodoAST.cpp \
+	  Logger.cpp
 
 # Convertir los .cpp en .o
 OBJ = $(SRC:.cpp=.o)
