@@ -8,8 +8,8 @@ LexerRust::LexerRust(const string& codigo)
     : codigo(codigo), pos(0), line(1), column(1) 
 {
     // 🔹 Palabras clave
-    palabrasClave = {
-        "as", "async", "await", "break", "const", "continue", "crate", "dyn", "extern", "false", "fn", "impl", "in", "let", "mod", "move", "mut", "pub", "ref", "return", "self", "Self", "static", "super", "trait", "true", "type", "union", "unsafe", "use", "where"};
+    palabrasReservadas = {
+        "as", "async", "await", "break", "const", "continue", "crate", "dyn", "extern", "false", "fn", "impl", "in", "let", "mod", "move", "mut", "println", "pub", "ref", "return", "self", "Self", "static", "super", "trait", "true", "type", "union", "unsafe", "use", "where"};
 
     // 🔹 Tipos primitivos
     tiposPrimitivos = {
@@ -85,7 +85,7 @@ void LexerRust::comentarioLinea(vector<Token>& tokens) {
         lex += codigo[pos++]; column++;
     }
 
-    tokens.push_back({Tipo::COMENTARIO, lex, iniLine, iniCol});
+    //tokens.push_back({Tipo::COMENTARIO, lex, iniLine, iniCol});
 }
 
 void LexerRust::comentarioBloque(vector<Token>& tokens) {
@@ -105,7 +105,7 @@ void LexerRust::comentarioBloque(vector<Token>& tokens) {
 
     if (!closed) cerr << "Error: comentario no cerrado en L" << iniLine << ", C" << iniCol << endl;
 
-    tokens.push_back({Tipo::COMENTARIO, lex, iniLine, iniCol});
+    //tokens.push_back({Tipo::COMENTARIO, lex, iniLine, iniCol});
 }
 
 // ---------------------- IDENTIFICADOR ----------------------
@@ -118,7 +118,7 @@ void LexerRust::identificador(vector<Token>& tokens) {
     }
 
     Tipo tipo;
-    if (palabrasClave.count(lex)) tipo = Tipo::PALABRA_CLAVE;
+    if (palabrasReservadas.count(lex)) tipo = Tipo::PALABRA_RESERVADA;
 else if (controlFlujo.count(lex)) tipo = Tipo::CONTROL_FLUJO;
 else if (tiposPrimitivos.count(lex)) tipo = Tipo::TIPO_PRIMITIVO;
 else if (tiposEstandar.count(lex)) tipo = Tipo::TIPO_ESTANDAR;
@@ -246,7 +246,7 @@ void LexerRust::printTokens(vector<Token>& tokens) {
         {Tipo::NUMERO_DECIMAL, "NUMERO_DECIMAL"},
         {Tipo::NUMERO_ENTERO, "NUMERO_ENTERO"},
         {Tipo::OPERADOR, "OPERADOR"},
-        {Tipo::PALABRA_CLAVE, "PALABRA_CLAVE"},
+        {Tipo::PALABRA_RESERVADA, "PALABRA_RESERVADA"},
         {Tipo::PUNTUACION, "PUNTUACION"},
         {Tipo::SIMBOLO, "SIMBOLO"},
         {Tipo::TIPO_ESTANDAR, "TIPO_ESTANDAR"},

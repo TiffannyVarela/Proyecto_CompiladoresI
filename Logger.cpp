@@ -31,7 +31,7 @@ void Logger::inizializar(){
         {Tipo::NUMERO_DECIMAL, "NUMERO_DECIMAL"},
         {Tipo::NUMERO_ENTERO, "NUMERO_ENTERO"},
         {Tipo::OPERADOR, "OPERADOR"},
-        {Tipo::PALABRA_CLAVE, "PALABRA_CLAVE"},
+        {Tipo::PALABRA_RESERVADA, "PALABRA_RESERVADA"},
         {Tipo::PUNTUACION, "PUNTUACION"},
         {Tipo::SIMBOLO, "SIMBOLO"},
         {Tipo::TIPO_ESTANDAR, "TIPO_ESTANDAR"},

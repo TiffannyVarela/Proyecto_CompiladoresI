@@ -1,19 +1,17 @@
 === TOKENS ENCONTRADOS ===
-399
-[L:1,C:1] COMENTARIO: // Indica que estamos en el archivo principal
-[L:2,C:1] PALABRA_CLAVE: fn
+375
+[L:2,C:1] PALABRA_RESERVADA: fn
 [L:2,C:4] IDENTIFICADOR: main
 [L:2,C:8] PUNTUACION: (
 [L:2,C:9] PUNTUACION: )
 [L:2,C:11] PUNTUACION: {
-[L:3,C:5] IDENTIFICADOR: println
+[L:3,C:5] PALABRA_RESERVADA: println
 [L:3,C:12] OPERADOR: !
 [L:3,C:13] PUNTUACION: (
 [L:3,C:14] CADENA: "Hola, mundo!"
 [L:3,C:28] PUNTUACION: )
 [L:3,C:29] PUNTUACION: ;
-[L:3,C:31] COMENTARIO: // Imprime un mensaje en consola
-[L:5,C:5] IDENTIFICADOR: println
+[L:5,C:5] PALABRA_RESERVADA: println
 [L:5,C:12] OPERADOR: !
 [L:5,C:13] PUNTUACION: (
 [L:5,C:14] CADENA: "\n\nTipos de datos"
@@ -23,7 +21,7 @@
 [L:6,C:16] PUNTUACION: (
 [L:6,C:17] PUNTUACION: )
 [L:6,C:18] PUNTUACION: ;
-[L:8,C:5] IDENTIFICADOR: println
+[L:8,C:5] PALABRA_RESERVADA: println
 [L:8,C:12] OPERADOR: !
 [L:8,C:13] PUNTUACION: (
 [L:8,C:14] CADENA: "\n\nCondicionales"
@@ -33,7 +31,7 @@
 [L:9,C:18] PUNTUACION: (
 [L:9,C:19] PUNTUACION: )
 [L:9,C:20] PUNTUACION: ;
-[L:11,C:5] IDENTIFICADOR: println
+[L:11,C:5] PALABRA_RESERVADA: println
 [L:11,C:12] OPERADOR: !
 [L:11,C:13] PUNTUACION: (
 [L:11,C:14] CADENA: "\n\nCiclo For"
@@ -43,7 +41,7 @@
 [L:12,C:14] PUNTUACION: (
 [L:12,C:15] PUNTUACION: )
 [L:12,C:16] PUNTUACION: ;
-[L:14,C:5] IDENTIFICADOR: println
+[L:14,C:5] PALABRA_RESERVADA: println
 [L:14,C:12] OPERADOR: !
 [L:14,C:13] PUNTUACION: (
 [L:14,C:14] CADENA: "\n\nArreglos"
@@ -53,7 +51,7 @@
 [L:15,C:13] PUNTUACION: (
 [L:15,C:14] PUNTUACION: )
 [L:15,C:15] PUNTUACION: ;
-[L:17,C:5] IDENTIFICADOR: println
+[L:17,C:5] PALABRA_RESERVADA: println
 [L:17,C:12] OPERADOR: !
 [L:17,C:13] PUNTUACION: (
 [L:17,C:14] CADENA: "\n\nMapeo"
@@ -63,7 +61,7 @@
 [L:18,C:10] PUNTUACION: (
 [L:18,C:11] PUNTUACION: )
 [L:18,C:12] PUNTUACION: ;
-[L:20,C:5] IDENTIFICADOR: println
+[L:20,C:5] PALABRA_RESERVADA: println
 [L:20,C:12] OPERADOR: !
 [L:20,C:13] PUNTUACION: (
 [L:20,C:14] CADENA: "\n\nEstructuras"
@@ -74,27 +72,24 @@
 [L:21,C:17] PUNTUACION: )
 [L:21,C:18] PUNTUACION: ;
 [L:22,C:1] PUNTUACION: }
-[L:24,C:1] COMENTARIO: // Funcion que demuestra uso de tipos de datos
-[L:25,C:1] PALABRA_CLAVE: fn
+[L:25,C:1] PALABRA_RESERVADA: fn
 [L:25,C:4] IDENTIFICADOR: tipos_datos
 [L:25,C:15] PUNTUACION: (
 [L:25,C:16] PUNTUACION: )
 [L:25,C:18] PUNTUACION: {
-[L:26,C:5] PALABRA_CLAVE: let
+[L:26,C:5] PALABRA_RESERVADA: let
 [L:26,C:9] IDENTIFICADOR: nombre
 [L:26,C:16] OPERADOR: =
 [L:26,C:18] CADENA: "Juan"
 [L:26,C:24] PUNTUACION: ;
-[L:26,C:26] COMENTARIO: // Declara una variable inmutable
-[L:27,C:5] PALABRA_CLAVE: let
+[L:27,C:5] PALABRA_RESERVADA: let
 [L:27,C:9] IDENTIFICADOR: edad
 [L:27,C:13] OPERADOR: :
 [L:27,C:15] TIPO_PRIMITIVO: i32
 [L:27,C:19] OPERADOR: =
 [L:27,C:21] NUMERO_ENTERO: 30
 [L:27,C:23] PUNTUACION: ;
-[L:27,C:26] COMENTARIO: // Declara una variable con tipo explicito
-[L:28,C:5] IDENTIFICADOR: println
+[L:28,C:5] PALABRA_RESERVADA: println
 [L:28,C:12] OPERADOR: !
 [L:28,C:13] PUNTUACION: (
 [L:28,C:14] CADENA: "Hola, {}! Tienes {} años."
@@ -104,15 +99,13 @@
 [L:28,C:52] IDENTIFICADOR: edad
 [L:28,C:56] PUNTUACION: )
 [L:28,C:57] PUNTUACION: ;
-[L:28,C:59] COMENTARIO: // Imprime mensaje formateado
 [L:29,C:1] PUNTUACION: }
-[L:31,C:1] COMENTARIO: // Función que demuestra una estructura condicional
-[L:32,C:1] PALABRA_CLAVE: fn
+[L:32,C:1] PALABRA_RESERVADA: fn
 [L:32,C:4] IDENTIFICADOR: condicionales
 [L:32,C:17] PUNTUACION: (
 [L:32,C:18] PUNTUACION: )
 [L:32,C:20] PUNTUACION: {
-[L:33,C:5] PALABRA_CLAVE: let
+[L:33,C:5] PALABRA_RESERVADA: let
 [L:33,C:9] IDENTIFICADOR: numero
 [L:33,C:16] OPERADOR: =
 [L:33,C:18] NUMERO_ENTERO: 10
@@ -124,8 +117,7 @@
 [L:34,C:19] OPERADOR: ==
 [L:34,C:22] NUMERO_ENTERO: 0
 [L:34,C:24] PUNTUACION: {
-[L:34,C:26] COMENTARIO: // Verifica si el numero es par
-[L:35,C:9] IDENTIFICADOR: println
+[L:35,C:9] PALABRA_RESERVADA: println
 [L:35,C:16] OPERADOR: !
 [L:35,C:17] PUNTUACION: (
 [L:35,C:18] CADENA: "El numero es par."
@@ -134,7 +126,7 @@
 [L:36,C:5] PUNTUACION: }
 [L:36,C:7] CONTROL_FLUJO: else
 [L:36,C:12] PUNTUACION: {
-[L:37,C:9] IDENTIFICADOR: println
+[L:37,C:9] PALABRA_RESERVADA: println
 [L:37,C:16] OPERADOR: !
 [L:37,C:17] PUNTUACION: (
 [L:37,C:18] CADENA: "El numero es impar."
@@ -142,21 +134,19 @@
 [L:37,C:40] PUNTUACION: ;
 [L:38,C:5] PUNTUACION: }
 [L:39,C:1] PUNTUACION: }
-[L:41,C:1] COMENTARIO: // Funcion que muestra un ciclo for
-[L:42,C:1] PALABRA_CLAVE: fn
+[L:42,C:1] PALABRA_RESERVADA: fn
 [L:42,C:4] IDENTIFICADOR: ciclo_for
 [L:42,C:13] PUNTUACION: (
 [L:42,C:14] PUNTUACION: )
 [L:42,C:16] PUNTUACION: {
 [L:43,C:5] CONTROL_FLUJO: for
 [L:43,C:9] IDENTIFICADOR: i
-[L:43,C:11] PALABRA_CLAVE: in
+[L:43,C:11] PALABRA_RESERVADA: in
 [L:43,C:14] NUMERO_DECIMAL: 0.
 [L:43,C:16] OPERADOR: .
 [L:43,C:17] NUMERO_ENTERO: 8
 [L:43,C:19] PUNTUACION: {
-[L:43,C:21] COMENTARIO: // Recorre del 0 al 7
-[L:44,C:9] IDENTIFICADOR: println
+[L:44,C:9] PALABRA_RESERVADA: println
 [L:44,C:16] OPERADOR: !
 [L:44,C:17] PUNTUACION: (
 [L:44,C:18] CADENA: "Iteracion: {}"
@@ -166,13 +156,12 @@
 [L:44,C:37] PUNTUACION: ;
 [L:45,C:5] PUNTUACION: }
 [L:46,C:1] PUNTUACION: }
-[L:48,C:1] COMENTARIO: // Funcion que muestra uso de vectores
-[L:49,C:1] PALABRA_CLAVE: fn
+[L:49,C:1] PALABRA_RESERVADA: fn
 [L:49,C:4] IDENTIFICADOR: arreglos
 [L:49,C:12] PUNTUACION: (
 [L:49,C:13] PUNTUACION: )
 [L:49,C:15] PUNTUACION: {
-[L:50,C:5] PALABRA_CLAVE: let
+[L:50,C:5] PALABRA_RESERVADA: let
 [L:50,C:9] IDENTIFICADOR: numeros
 [L:50,C:17] OPERADOR: =
 [L:50,C:19] PUNTUACION: [
@@ -187,9 +176,8 @@
 [L:50,C:32] NUMERO_ENTERO: 5
 [L:50,C:33] PUNTUACION: ]
 [L:50,C:34] PUNTUACION: ;
-[L:50,C:36] COMENTARIO: // Arreglo de enteros con tamanio fijo
-[L:51,C:5] PALABRA_CLAVE: let
-[L:51,C:9] PALABRA_CLAVE: mut
+[L:51,C:5] PALABRA_RESERVADA: let
+[L:51,C:9] PALABRA_RESERVADA: mut
 [L:51,C:13] IDENTIFICADOR: tallas
 [L:51,C:20] OPERADOR: =
 [L:51,C:22] IDENTIFICADOR: vec
@@ -206,8 +194,7 @@
 [L:51,C:48] CADENA: "XXL"
 [L:51,C:53] PUNTUACION: ]
 [L:51,C:54] PUNTUACION: ;
-[L:51,C:56] COMENTARIO: // Vector (slice dinamico)
-[L:53,C:5] IDENTIFICADOR: println
+[L:53,C:5] PALABRA_RESERVADA: println
 [L:53,C:12] OPERADOR: !
 [L:53,C:13] PUNTUACION: (
 [L:53,C:14] CADENA: "Arreglo de numeros: {:?}"
@@ -215,8 +202,7 @@
 [L:53,C:42] IDENTIFICADOR: numeros
 [L:53,C:49] PUNTUACION: )
 [L:53,C:50] PUNTUACION: ;
-[L:53,C:52] COMENTARIO: // {:?} para imprimir estructuras complejas
-[L:54,C:5] IDENTIFICADOR: println
+[L:54,C:5] PALABRA_RESERVADA: println
 [L:54,C:12] OPERADOR: !
 [L:54,C:13] PUNTUACION: (
 [L:54,C:14] CADENA: "Slice de tallas: {:?}"
@@ -231,8 +217,7 @@
 [L:56,C:17] CADENA: "XXXL"
 [L:56,C:23] PUNTUACION: )
 [L:56,C:24] PUNTUACION: ;
-[L:56,C:26] COMENTARIO: // Agrega una talla al final del vector
-[L:57,C:5] IDENTIFICADOR: println
+[L:57,C:5] PALABRA_RESERVADA: println
 [L:57,C:12] OPERADOR: !
 [L:57,C:13] PUNTUACION: (
 [L:57,C:14] CADENA: "Tallas actualizadas: {:?}"
@@ -241,21 +226,20 @@
 [L:57,C:49] PUNTUACION: )
 [L:57,C:50] PUNTUACION: ;
 [L:58,C:1] PUNTUACION: }
-[L:60,C:1] COMENTARIO: // Funcion que muestra uso de mapas
-[L:61,C:1] PALABRA_CLAVE: fn
+[L:61,C:1] PALABRA_RESERVADA: fn
 [L:61,C:4] IDENTIFICADOR: mapeo
 [L:61,C:9] PUNTUACION: (
 [L:61,C:10] PUNTUACION: )
 [L:61,C:12] PUNTUACION: {
-[L:62,C:5] PALABRA_CLAVE: use
+[L:62,C:5] PALABRA_RESERVADA: use
 [L:62,C:9] IDENTIFICADOR: std
 [L:62,C:12] OPERADOR: ::
 [L:62,C:14] IDENTIFICADOR: collections
 [L:62,C:25] OPERADOR: ::
 [L:62,C:27] TIPO_ESTANDAR: HashMap
 [L:62,C:34] PUNTUACION: ;
-[L:64,C:5] PALABRA_CLAVE: let
-[L:64,C:9] PALABRA_CLAVE: mut
+[L:64,C:5] PALABRA_RESERVADA: let
+[L:64,C:9] PALABRA_RESERVADA: mut
 [L:64,C:13] IDENTIFICADOR: disponibles
 [L:64,C:25] OPERADOR: =
 [L:64,C:27] TIPO_ESTANDAR: HashMap
@@ -264,7 +248,6 @@
 [L:64,C:39] PUNTUACION: (
 [L:64,C:40] PUNTUACION: )
 [L:64,C:41] PUNTUACION: ;
-[L:64,C:43] COMENTARIO: // Crea un nuevo HashMap
 [L:65,C:5] IDENTIFICADOR: disponibles
 [L:65,C:16] OPERADOR: .
 [L:65,C:17] IDENTIFICADOR: insert
@@ -301,10 +284,8 @@
 [L:68,C:36] NUMERO_ENTERO: 3
 [L:68,C:37] PUNTUACION: )
 [L:68,C:38] PUNTUACION: ;
-[L:68,C:40] COMENTARIO: // Agrega un nuevo elemento
-[L:70,C:5] COMENTARIO: // Accede e imprime valores especificos
 [L:71,C:5] CONTROL_FLUJO: if
-[L:71,C:8] PALABRA_CLAVE: let
+[L:71,C:8] PALABRA_RESERVADA: let
 [L:71,C:12] IDENTIFICADOR: Some
 [L:71,C:16] PUNTUACION: (
 [L:71,C:17] IDENTIFICADOR: rojo
@@ -317,7 +298,7 @@
 [L:71,C:41] CADENA: "Rojo"
 [L:71,C:47] PUNTUACION: )
 [L:71,C:49] PUNTUACION: {
-[L:72,C:9] IDENTIFICADOR: println
+[L:72,C:9] PALABRA_RESERVADA: println
 [L:72,C:16] OPERADOR: !
 [L:72,C:17] PUNTUACION: (
 [L:72,C:18] CADENA: "Camisas Rojas Disponibles: {}"
@@ -326,7 +307,7 @@
 [L:72,C:55] PUNTUACION: )
 [L:72,C:56] PUNTUACION: ;
 [L:73,C:5] PUNTUACION: }
-[L:75,C:5] IDENTIFICADOR: println
+[L:75,C:5] PALABRA_RESERVADA: println
 [L:75,C:12] OPERADOR: !
 [L:75,C:13] PUNTUACION: (
 [L:75,C:14] CADENA: "Inventario de Camisas: {:?}"
@@ -335,13 +316,11 @@
 [L:75,C:56] PUNTUACION: )
 [L:75,C:57] PUNTUACION: ;
 [L:76,C:1] PUNTUACION: }
-[L:78,C:1] COMENTARIO: // Funcion que muestra uso de estructuras
-[L:79,C:1] PALABRA_CLAVE: fn
+[L:79,C:1] PALABRA_RESERVADA: fn
 [L:79,C:4] IDENTIFICADOR: estructuras
 [L:79,C:15] PUNTUACION: (
 [L:79,C:16] PUNTUACION: )
 [L:79,C:18] PUNTUACION: {
-[L:80,C:5] COMENTARIO: // Declaracion de la estructura Estudiante
 [L:81,C:5] TIPO_PRIMITIVO: struct
 [L:81,C:12] IDENTIFICADOR: Estudiante
 [L:81,C:23] PUNTUACION: {
@@ -354,8 +333,7 @@
 [L:83,C:24] TIPO_PRIMITIVO: i32
 [L:83,C:27] PUNTUACION: ,
 [L:84,C:5] PUNTUACION: }
-[L:86,C:5] COMENTARIO: // Instancia de la estructura
-[L:87,C:5] PALABRA_CLAVE: let
+[L:87,C:5] PALABRA_RESERVADA: let
 [L:87,C:9] IDENTIFICADOR: estudiante
 [L:87,C:20] OPERADOR: =
 [L:87,C:22] IDENTIFICADOR: Estudiante
@@ -375,14 +353,13 @@
 [L:89,C:32] PUNTUACION: ,
 [L:90,C:5] PUNTUACION: }
 [L:90,C:6] PUNTUACION: ;
-[L:92,C:5] COMENTARIO: // Imprimir los campos de la estructura
-[L:93,C:5] IDENTIFICADOR: println
+[L:93,C:5] PALABRA_RESERVADA: println
 [L:93,C:12] OPERADOR: !
 [L:93,C:13] PUNTUACION: (
 [L:93,C:14] CADENA: "Informacion del Estudiante:"
 [L:93,C:43] PUNTUACION: )
 [L:93,C:44] PUNTUACION: ;
-[L:94,C:5] IDENTIFICADOR: println
+[L:94,C:5] PALABRA_RESERVADA: println
 [L:94,C:12] OPERADOR: !
 [L:94,C:13] PUNTUACION: (
 [L:94,C:14] CADENA: "Nombre: {} Edad: {}"
@@ -397,6 +374,5 @@
 [L:94,C:80] PUNTUACION: )
 [L:94,C:81] PUNTUACION: ;
 [L:95,C:1] PUNTUACION: }
-[L:96,C:1] COMENTARIO: // Este es un ejemplo de un programa en Rust que muestra varios conceptos basicos
 [L:96,C:82] FIN: 
 === FIN TOKENS ===
