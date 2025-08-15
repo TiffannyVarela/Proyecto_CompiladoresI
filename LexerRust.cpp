@@ -15,7 +15,7 @@ LexerRust::LexerRust(const string& codigo) : codigo (codigo), pos(0), line(1), c
     simbolosCompuestos = {
         "==", "!=", "<=", ">=", "&&", "||", "+=", "-=", "*=", "/=", "%=", 
         "->", "::", "..", "..=", "=>", "|=", "&=", "^=", "<<", ">>", "<<=", ">>="
-    };
+    };//Revisar los tipos correctos
 }
 
 vector <Token> LexerRust::analiza(){
