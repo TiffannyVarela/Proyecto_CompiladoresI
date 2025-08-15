@@ -30,5 +30,8 @@ private:
     int column;
     set<string> palabrasClave;
     set<string> simbolosCompuestos;
+    set<string> tiposPrimitivos;
+    set<string> tiposEstandar;
+    set<string> controlFlujo;
 };
 #endif // LEXERRUST_H

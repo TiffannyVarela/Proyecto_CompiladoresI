@@ -13,7 +13,7 @@ using namespace std;
 int main() {
     try
     {
-        lectura fileReader("prueba.rs");
+        lectura fileReader("main.rs");
         vector<char> fileContent = fileReader.readFile();
 
         //vector<char> -> string
