@@ -34,6 +34,7 @@ int main() {
             return logger.validateYesNo(input);
         });
 
+        logger.inizializar();
         logger.logTokens(tokens);
 
         //Analisis sintactitco
