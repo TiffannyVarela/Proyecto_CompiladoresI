@@ -28,7 +28,10 @@ private:
     size_t pos;
     int line;
     int column;
-    set<string> palabrasClave;
+    set<string> palabrasReservadas;
     set<string> simbolosCompuestos;
+    set<string> tiposPrimitivos;
+    set<string> tiposEstandar;
+    set<string> controlFlujo;
 };
 #endif // LEXERRUST_H

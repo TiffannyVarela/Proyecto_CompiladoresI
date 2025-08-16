@@ -23,16 +23,19 @@ void Logger::inizializar(){
         {Tipo::CADENA, "CADENA"},
         {Tipo::CARACTER, "CARACTER"},
         {Tipo::COMENTARIO, "COMENTARIO"},
+        {Tipo::CONTROL_FLUJO, "CONTROL_FLUJO"},
         {Tipo::ERROR, "ERROR"},
         {Tipo::FIN, "FIN"},
         {Tipo::IDENTIFICADOR, "IDENTIFICADOR"},
-        {Tipo::NUMERO_CIENTIFICO, "NUMERO CIENTIFICO"},
-        {Tipo::NUMERO_DECIMAL, "NUUMERO DECIMAL"},
-        {Tipo::NUMERO_ENTERO, "NUMERO ENTERO"},
+        {Tipo::NUMERO_CIENTIFICO, "NUMERO_CIENTIFICO"},
+        {Tipo::NUMERO_DECIMAL, "NUMERO_DECIMAL"},
+        {Tipo::NUMERO_ENTERO, "NUMERO_ENTERO"},
         {Tipo::OPERADOR, "OPERADOR"},
-        {Tipo::PALABRA_CLAVE, "PALABRA CLAVE"},
+        {Tipo::PALABRA_RESERVADA, "PALABRA_RESERVADA"},
         {Tipo::PUNTUACION, "PUNTUACION"},
-        {Tipo::SIMBOLO, "SIMBOLO"}
+        {Tipo::SIMBOLO, "SIMBOLO"},
+        {Tipo::TIPO_ESTANDAR, "TIPO_ESTANDAR"},
+        {Tipo::TIPO_PRIMITIVO, "TIPO_PRIMITIVO"}
     };
 }
 

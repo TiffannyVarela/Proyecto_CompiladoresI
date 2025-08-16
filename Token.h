@@ -5,21 +5,23 @@
 
 using namespace std;
 
-enum class Tipo{
-    IDENTIFICADOR,
-    PALABRA_CLAVE,
-    COMENTARIO,
-    NUMERO,
-    NUMERO_ENTERO,
-    NUMERO_CIENTIFICO,
-    NUMERO_DECIMAL,
-    SIMBOLO,
-    OPERADOR,
-    PUNTUACION,
+enum class Tipo {
     CADENA,
     CARACTER,
+    COMENTARIO,
+    CONTROL_FLUJO,
     ERROR,
-    FIN
+    FIN,
+    IDENTIFICADOR,
+    NUMERO_CIENTIFICO,
+    NUMERO_DECIMAL,
+    NUMERO_ENTERO,
+    OPERADOR,
+    PALABRA_RESERVADA,
+    PUNTUACION,
+    SIMBOLO,
+    TIPO_ESTANDAR,
+    TIPO_PRIMITIVO
 };
 
 struct Token
