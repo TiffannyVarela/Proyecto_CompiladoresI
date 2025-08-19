@@ -5,21 +5,21 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <set>
+#include <regex>
 
 using namespace std;
+
+struct Reglas
+{
+    regex patron;
+    Tipo tipo;
+};
+
 
 class LexerRust {
 public:
     LexerRust(const string& codigo);
     vector<Token> analiza();
-    void comentarioLinea(vector<Token>& tokens);
-    void comentarioBloque(vector<Token>& tokens);
-    void identificador(vector<Token>& tokens);
-    void numero(vector<Token>& tokens);
-    void cadena(vector<Token>& tokens);
-    void caracter(vector<Token>& tokens);
-    void simbolos(vector<Token>& tokens);
     void printTokens(vector<Token>& tokens);
     ~LexerRust();
 
@@ -28,10 +28,6 @@ private:
     size_t pos;
     int line;
     int column;
-    set<string> palabrasReservadas;
-    set<string> simbolosCompuestos;
-    set<string> tiposPrimitivos;
-    set<string> tiposEstandar;
-    set<string> controlFlujo;
+    vector <Reglas> Reglas;
 };
 #endif // LEXERRUST_H
