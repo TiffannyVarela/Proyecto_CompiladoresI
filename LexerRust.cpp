@@ -75,7 +75,6 @@ vector<Token> LexerRust::analiza() {
     return tokens;
 }
 
-// ---------------------- COMENTARIOS ----------------------
 void LexerRust::comentarioLinea(vector<Token>& tokens) {
     int iniLine = line, iniCol = column;
     string lex = "//";
@@ -84,7 +83,6 @@ void LexerRust::comentarioLinea(vector<Token>& tokens) {
     while (pos < codigo.size() && codigo[pos] != '\n') {
         lex += codigo[pos++]; column++;
     }
-
     //tokens.push_back({Tipo::COMENTARIO, lex, iniLine, iniCol});
 }
 
@@ -108,7 +106,6 @@ void LexerRust::comentarioBloque(vector<Token>& tokens) {
     //tokens.push_back({Tipo::COMENTARIO, lex, iniLine, iniCol});
 }
 
-// ---------------------- IDENTIFICADOR ----------------------
 void LexerRust::identificador(vector<Token>& tokens) {
     int iniLine = line, iniCol = column;
     string lex;
@@ -128,7 +125,6 @@ else tipo = Tipo::IDENTIFICADOR;
     tokens.push_back({tipo, lex, iniLine, iniCol});
 }
 
-// ---------------------- NÚMEROS ----------------------
 void LexerRust::numero(vector<Token>& tokens) {
     int iniLine = line, iniCol = column;
     string lex;
@@ -159,7 +155,6 @@ void LexerRust::numero(vector<Token>& tokens) {
     tokens.push_back({tipo, lex, iniLine, iniCol});
 }
 
-// ---------------------- CADENA ----------------------
 void LexerRust::cadena(vector<Token>& tokens) {
     int iniLine = line, iniCol = column;
     string lex = "\""; pos++; column++;
@@ -183,7 +178,6 @@ void LexerRust::cadena(vector<Token>& tokens) {
     tokens.push_back({Tipo::CADENA, lex, iniLine, iniCol});
 }
 
-// ---------------------- CARACTER ----------------------
 void LexerRust::caracter(vector<Token>& tokens) {
     int iniLine = line, iniCol = column;
     string lex = "'"; pos++; column++;
@@ -204,7 +198,6 @@ void LexerRust::caracter(vector<Token>& tokens) {
     tokens.push_back({Tipo::CARACTER, lex, iniLine, iniCol});
 }
 
-// ---------------------- SIMBOLOS ----------------------
 void LexerRust::simbolos(vector<Token>& tokens) {
     int iniLine = line, iniCol = column;
 
@@ -232,7 +225,6 @@ void LexerRust::simbolos(vector<Token>& tokens) {
     pos++; column++;
 }
 
-// ---------------------- PRINT ----------------------
 void LexerRust::printTokens(vector<Token>& tokens) {
     map<Tipo, string> tipoString = {
         {Tipo::CADENA, "CADENA"},
