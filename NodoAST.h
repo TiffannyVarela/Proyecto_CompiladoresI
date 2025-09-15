@@ -12,11 +12,11 @@ class NodoAST
 private:
     string tipe;
     string value;
-    vector<NodoAST*> childs;
+    vector<unique_ptr<NodoAST>> childs;
 public:
     NodoAST(const string& tipe, const string& value);
-    void addChild(NodoAST* child);
-    void print(int level=0);
+    void addChild(unique_ptr<NodoAST> child);
+    void print(ostream& out, int level = 0) const;
     bool haveChilds() const {return !childs.empty();}
     ~NodoAST();
 };

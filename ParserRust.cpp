@@ -1,454 +1,391 @@
 #include "ParserRust.h"
-#include "NodoAST.h"
 #include <iostream>
-#include <vector>
-#include <memory>
-//#include <stack>
-//#include <regex>
+#include <stdexcept>
 
 using namespace std;
 
-ParserRust::ParserRust(const vector<Token>& tokens) : tokens(tokens), pos(0){}
+ParserRust::ParserRust(const vector<Token>& tokens) : tokens(tokens), pos(0) {}
 
-Token ParserRust::actual() const{
-    if (tokens.empty())
-    {
-        return Token{Tipo::FIN, "EOF", -1, -1};
-    }
+ParserRust::~ParserRust() {}
 
-    if (pos >= tokens.size())
-    {
-        cerr << "Advertencia: Posición " << pos << " fuera de rango" << endl;
-        return tokens.back(); //Toma ultimo token
+const Token& ParserRust::actual() const {
+    if (pos < tokens.size()) {
+        return tokens[pos];
     }
-    
-    return tokens[pos];
+    static Token endToken = {Tipo::FIN, "EOF", -1, -1};
+    return endToken;
 }
 
-void ParserRust::avanza(){
-    if (pos < tokens.size())
-    {
-        cout << "Avanzando de " << pos << " (" << tokens[pos].valor << ") a " << (pos+1)<< endl;
+bool ParserRust::isEnd() const {
+    return pos >= tokens.size() || actual().tipo == Tipo::FIN;
+}
+
+void ParserRust::avanza() {
+    if (!isEnd()) {
         pos++;
     }
-    else{
-        cout << "No se puede avanzar, fin de tokens alcanzado" << endl;
-    }
 }
 
-unique_ptr<NodoAST> ParserRust::parse(){
-    cout << "Iniciando parsing... Tokens restantes: " << (tokens.size() - pos) << endl;
-    if (tokens.empty() || (tokens.size() == 1 &&tokens[0].tipo == Tipo::FIN))
+bool ParserRust::matchLexical(const string& value) {
+    if (isEnd())
     {
-        cerr << "Error: No hay código para parsear" << endl;
-        return nullptr;
+        return false;
     }
-
-    try
-    {
-        //nodo raiz
-        auto program = make_unique<NodoAST>("PROGRAMA", "");
-        size_t tokensProcesados = 0;
-        const size_t maxTokens = tokens.size()*2; //Prevenir bucles infinitos
-
-        while (actual().tipo != Tipo::FIN && tokensProcesados < maxTokens)
-        {
-            unique_ptr<NodoAST> declaracion;
-            size_t posInicia = pos;
-
-            if (actual().valor=="fn")
-            {
-                declaracion = parseFunc();
-            }
-
-            else if (actual().valor == "let")
-            {
-                declaracion = parseAsig();
-            }
-
-            else if (actual().valor == "if")
-            {
-                declaracion = parseIf();
-            }
-
-            else{
-                cerr << "Advertencia: Declaración no reconocida - "<< actual().valor << endl; 
-                avanza();
-            }
-
-            if (declaracion)
-            {
-                program->addChild(declaracion.release());
-            }
-
-            else if (pos == posInicia)
-            {
-                //No pudo avanzar y trata de prevenir bucle infinito
-                cerr << "Error: No se progresó en el parsing. Token actual: "<< actual().valor << endl;
-                avanza();
-            }
-            tokensProcesados++;
-        }
-
-        if (program && !program->haveChilds())
-        {
-            cerr << "Advertencia: No se encontraron declaraciones válidas" << endl;
-            return nullptr;
-        }
-        
-        return program;
-    }
-    catch(const std::exception& e)
-    {
-        cerr << "Error de parsing: " << e.what() << endl;
-        return nullptr;
-    }    
-}
-
-unique_ptr<NodoAST> ParserRust::parseFunc(){
-    cout << "Parseando " << __func__ << " en token: " << actual().valor << endl;
-    if (!wait("fn"))
-    {
-        return nullptr;
-    }
-
-    if (actual().tipo != Tipo::IDENTIFICADOR)
-    {
-        throw runtime_error("Se espera nombre de la funcion.");
-    }
-
-    string name = actual().valor;
-    avanza();
-    
-    if (!wait("("))
-    {
-        throw runtime_error("Se espera '(' luego del nombre");
-    }
-
-    //Parsear los parametros
-    auto parameters = make_unique<NodoAST>("PARAMETROS", "");
-    while (!(actual().tipo == Tipo::PUNTUACION && actual().valor == ")"))
-    {
-        if (actual().tipo == Tipo::IDENTIFICADOR)
-        {
-            parameters->addChild(new NodoAST("PARAMETRO", actual().valor));
-            avanza();
-            if (actual().valor == ",")
-            {
-                avanza();
-            }           
-        }
-        else{
-            throw runtime_error("Se espera ')'");
-        }         
-    }
-    avanza();
-
-    //Tipo de return
-    if (actual().valor == "->")
-    {
-        avanza();
-        if (actual().tipo != Tipo::IDENTIFICADOR)
-        {
-            throw runtime_error("Se espera el tipo de retorno");
-        }
-        avanza();        
-    }
-
-    //Bloque de la funcion
-    if(!wait("{")){
-        throw runtime_error("Se esperaba '{");
-    }
-
-    auto body = make_unique<NodoAST>("CUERPO", "");
-    while (true) 
-    {
-        if (actual().tipo == Tipo::PUNTUACION && actual().valor == "}") 
-        {
-            break;
-        }
-        else if (actual().tipo == Tipo::FIN) 
-        {
-            throw runtime_error("Se llegó al FIN sin encontrar '}'");
-        }
-        else if (actual().valor == "let") 
-        {
-            auto asig = parseAsig();
-            if (asig) body->addChild(asig.release());
-        }
-        else if (actual().valor == "return") 
-        {
-            auto ret = parseReturn();
-            if (ret) body->addChild(ret.release());
-        }
-        else if (actual().valor == "if") 
-        {
-            auto ifNode = parseIf();
-            if (ifNode) body->addChild(ifNode.release());
-        }
-        else {
-            // Token no reconocido - avanzar con precaución
-            cerr << "Advertencia: Token no manejado en cuerpo de función: " << actual().valor << endl;
-            avanza();
-        }
-    }
-    
-    avanza();
-
-    auto function = make_unique<NodoAST>("FUNCION", name);
-    function->addChild(parameters.release());
-    function->addChild(body.release());
-
-    return function;    
-}
-
-unique_ptr <NodoAST> ParserRust::parseIf(){
-    cout << "Parseando " << __func__ << " en token: " << actual().valor << endl;
-    if (!wait("if"))
-    {
-        return nullptr;
-    }
-
-    //Parsear la condicion
-    auto condicion = parseExpre();
-    if (!condicion)
-    {
-        throw runtime_error("Condicion invalida dentro del if");
-    }
-
-    //Bloque then**
-    if (!wait("{"))
-    {
-        throw runtime_error("Se espera '{' despues de la condicion");
-    }
-
-    auto bloqueThen = make_unique<NodoAST>("BLOQUE", "");
-    while (true)
-    {
-        if (actual().tipo == Tipo::PUNTUACION && actual().valor == "}")
-        {
-            break;
-        }
-        
-        if (actual().valor == "let")
-        {
-            auto asig = parseAsig();
-            if (asig)
-            {
-                bloqueThen->addChild(asig.release());
-            }
-        }
-        else if (actual().valor == "return")
-        {
-            auto ret = parseReturn();
-            if (ret)
-            {
-                bloqueThen->addChild(ret.release());
-            }
-        }
-        else{
-            avanza();
-        }
-    }
-        
-    wait("}");
-
-    //Parsear el bloque else
-    unique_ptr<NodoAST> bloqueElse;
-    if (actual().valor == "else")
-    {
-        avanza();
-
-        if (actual().valor == "{")
-        {
-            avanza();
-            bloqueElse = make_unique<NodoAST>("BLOQUE", "");
-            while (actual().valor != "}")
-            {
-                if (actual().valor == "let")
-                {
-                    auto asig = parseAsig();
-                    if (asig)
-                    {
-                        bloqueElse->addChild(asig.release());
-                    }                    
-                }
-                else if (actual().valor == "return")
-                {
-                    auto ret = parseReturn();
-                    if (ret)
-                    {
-                        bloqueElse->addChild(ret.release());
-                    }                    
-                }
-                else{
-                    avanza();
-                }                
-            }
-            wait("}");
-        }
-        else if (actual().valor == "if")
-        {
-            //si existe else if
-            bloqueElse = parseIf();
-        }
-    }
-    
-    auto nodoif = make_unique<NodoAST>("IF", "");
-    nodoif->addChild(condicion.release());
-    nodoif->addChild(bloqueThen.release());
-    if (bloqueElse)
-    {
-        nodoif->addChild(bloqueElse.release());
-    }
-    return nodoif;
-}
-
-unique_ptr <NodoAST> ParserRust::parseAsig(){
-    cout << "Parseando " << __func__ << " en token: " << actual().valor << endl;
-    if (!wait("let"))
-    {
-        return parseExpre();
-    }
-
-    if (actual().tipo != Tipo::IDENTIFICADOR)
-    {
-        throw runtime_error("Se espera un identificador despues de 'let");
-    }
-
-    string name = actual().valor;
-    avanza();
-
-    if (!wait("="))
-    {
-        throw runtime_error("Se espera un '=' luego del nombre de una variable");
-    }
-
-    auto expresion = parseExpre();
-    if (!expresion)
-    {
-        throw runtime_error("Expresión inválida después de '=");
-    }
-    
-    auto asig = make_unique<NodoAST>("ASIGNACION", "=");
-    asig->addChild(new NodoAST("VARIABLE", name));
-    asig->addChild(expresion.release());
-    
-    return asig;
-}
-
-unique_ptr <NodoAST> ParserRust::parseExpre(){
-    cout << "Parseando " << __func__ << " en token: " << actual().valor << endl;
-    auto izq = parseTerm();
-    if (!izq)
-    {
-        return nullptr;
-    }
-
-    while (actual().tipo == Tipo::OPERADOR && (actual().valor == "+" || actual().valor == "-"))
-    {
-        string operador = actual().valor;
-        avanza();
-
-        auto der = parseTerm();
-        if (!der)
-        {
-            return nullptr;
-        }
-
-        auto operacion = make_unique<NodoAST>("OPERACION", operador);
-        operacion->addChild(izq.release());
-        operacion->addChild(der.release());
-        izq = move(operacion);        
-    }
-    return izq;    
-}
-
-unique_ptr <NodoAST> ParserRust::parseTerm(){
-    cout << "Parseando " << __func__ << " en token: " << actual().valor << endl;
-    //Numeros
-    if (actual().tipo == Tipo::NUMERO_DECIMAL || actual().tipo == Tipo::NUMERO_ENTERO || actual().tipo == Tipo::NUMERO_CIENTIFICO)
-    {
-        string tipe;
-        switch (actual().tipo)
-        {
-        case Tipo::NUMERO_ENTERO: tipe = "ENTERO";
-        break;
-
-        case Tipo::NUMERO_DECIMAL: tipe = "DECIMAL";
-        break;
-
-        case Tipo::NUMERO_CIENTIFICO: tipe = "CIENTIFICO";
-        break;
-        
-        default:
-            tipe = "NUMERO";
-        }
-
-        string value = actual().valor;
-        avanza();
-        return make_unique<NodoAST>(tipe, value);
-    }
-
-    //Identificadores y variables
-    if (actual().tipo == Tipo::IDENTIFICADOR)
-    {
-        string name = actual().valor;
-        avanza();
-        return make_unique<NodoAST>("VARIABLE", name);
-    }
-
-    //Caracteres
-    if (actual().tipo == Tipo::CARACTER)
-    {
-        string value = actual().valor;
-        avanza();
-        return make_unique<NodoAST>("CARACTER", value);
-    }
-    
-    throw runtime_error("Token inesperado en expresión: " + actual().valor + " (Tipo: " + to_string(static_cast<int>(actual().tipo)) + ")");
-}
-
-unique_ptr <NodoAST> ParserRust::parseReturn(){
-    cout << "Parseando " << __func__ << " en token: " << actual().valor << endl;
-    if (!wait("return"))
-    {
-        return nullptr;
-    }
-    auto expresion = parseExpre();
-    auto ret = make_unique<NodoAST>("RETORNO", "");
-
-    if (expresion)
-    {
-        ret->addChild(expresion.release());
-    }
-
-    if (!wait(";"))
-    {
-        throw runtime_error("Se espera un ';' despues del return");
-    }
-    return ret;
-}
-
-bool ParserRust::wait(const string& value){
-    if (actual().valor == value)
-    {
+    if (actual().valor == value) {
         avanza();
         return true;
     }
     return false;
-    
 }
 
-bool ParserRust::wait(Tipo tipe){
-    if (actual().tipo == tipe)
+bool ParserRust::matchTipo(Tipo tipe) {
+    if (isEnd()) 
     {
+        return false;
+    }
+    if (actual().tipo == tipe) {
         avanza();
         return true;
     }
-    return false;    
+    return false;
 }
 
-ParserRust::~ParserRust() {
+void ParserRust::expectLexical(const string& value, const char* errorMsg) {
+    if (!matchLexical(value)) {
+        throw runtime_error("Linea: " + to_string(actual().line) + ", Columna: " + to_string(actual().column) + ". Expected token '" + value + "', but found '" + actual().valor + "'. " + errorMsg);
+    }
+}
 
+void ParserRust::expectTipo(Tipo tipe, const char* errorMsg) {
+    if (!matchTipo(tipe)) {
+        throw runtime_error("Linea: " + to_string(actual().line) + ", Columna: " + to_string(actual().column) + ". Expected token type '" + to_string(static_cast<int>(tipe)) + "', but found '" + actual().valor + "'. " + errorMsg);
+    }
+}
+
+unique_ptr<NodoAST> ParserRust::parse() {
+    auto rootNode = parseProgram();
+    while(actual().tipo != Tipo::FIN) {
+        auto declNode = parseDeclaracion();
+        if (declNode) {
+            rootNode->addChild(move(declNode));
+        } else {
+            throw runtime_error("Error parsing declaration at line " + std::to_string(actual().line));
+            avanza(); // Skip to next token if parsing fails
+        }
+    }
+    return rootNode;
+}
+
+unique_ptr<NodoAST> ParserRust::parseProgram() {
+    auto programNode = make_unique<NodoAST>("Program", "");
+    while (!isEnd()) {
+        if (actual().valor == "fn" || actual().valor == "let" || actual().valor == "if" || actual().valor == "for") {
+            auto declNode = parseDeclaracion();
+            if (declNode) {
+                programNode->addChild(move(declNode));
+            } else {
+                throw runtime_error("Error parsing declaration at line " + std::to_string(actual().line));
+            }
+        }         
+    }
+    return programNode;
+}
+
+unique_ptr<NodoAST> ParserRust::parseDeclaracion() {
+    if (actual().valor == "fn") 
+    {
+        return parseFunc();
+    } else if (actual().valor == "let") 
+    {
+        auto asigNode = parseAsig();
+        expectLexical(";", "Expected ';' after assignment.");
+        return asigNode;
+    } else if (actual().valor == "if") 
+    {
+        return parseIf();
+    } else 
+    {
+        throw runtime_error("Unexpected declaration: " + actual().valor);
+    } 
+}
+
+unique_ptr<NodoAST> ParserRust::parseFunc() {
+    expectLexical("fn", "Expected 'fn' keyword.");
+    expectTipo(Tipo::IDENTIFICADOR, "Expected function name.");
+    string funcName = tokens[pos-1].valor;
+
+    expectLexical("(", "Expected '(' after function name.");
+    auto parameters = parseParamOpt();
+    expectLexical(")", "Expected ')' after function parameters.");
+
+    if (matchLexical("->")) {
+        if(!(matchTipo(Tipo::IDENTIFICADOR) || matchTipo(Tipo::TIPO_PRIMITIVO) || matchTipo(Tipo::TIPO_ESTANDAR)))
+        {
+            throw runtime_error("Expected return type after '->' at line " + to_string(actual().line));
+        }
+    }
+    
+    auto funcNode = make_unique<NodoAST>("Function", funcName);
+    funcNode->addChild(move(parameters));
+    funcNode->addChild(move(parseBloque()));
+
+    return funcNode;
+}
+
+unique_ptr<NodoAST> ParserRust::parseParamOpt() {
+    auto paramsNode = make_unique<NodoAST>("Params", "");
+    while (actual().tipo == Tipo::IDENTIFICADOR) {
+        string paramName = actual().valor;
+        avanza();
+        string paramType;
+        if (matchLexical(":")) {
+            if (!(matchTipo(Tipo::IDENTIFICADOR) || matchTipo(Tipo::TIPO_PRIMITIVO) || matchTipo(Tipo::TIPO_ESTANDAR)))
+            {
+                throw runtime_error("Expected type after ':' at line " + to_string(actual().line));
+            }
+            paramType = tokens[pos-1].valor;
+        }
+
+        auto paramNode = make_unique<NodoAST>("Param", paramName + (paramType.empty() ? "" : ": " + paramType));
+        paramsNode->addChild(move(paramNode));
+        
+        if (!matchLexical(",")) {
+            break;
+        }
+    }
+    return paramsNode;
+}
+
+unique_ptr<NodoAST> ParserRust::parseIf() {
+    expectLexical("if", "Expected 'if' keyword.");
+    auto conditionNode = parseExpre();
+    
+    auto ifNode = make_unique<NodoAST>("If", "");
+    ifNode->addChild(move(conditionNode));
+    
+    ifNode->addChild(move(parseBloque()));
+    
+    if (matchLexical("else")) {
+        if (matchLexical("if")) {
+            ifNode->addChild(move(parseIf()));
+        } else {
+            ifNode->addChild(move(parseBloque()));
+        }
+    }
+    
+    return ifNode;
+}
+
+unique_ptr<NodoAST> ParserRust::parseFor() {
+    expectLexical("for", "Expected 'for' keyword.");
+    expectTipo(Tipo::IDENTIFICADOR, "Expected identifier for loop variable.");
+    string loopVar = tokens[pos-1].valor;
+    expectLexical("in", "Expected 'in' keyword after loop variable.");
+    auto rangeNode = parseExpre() ;
+    auto forNode = make_unique<NodoAST>("For", "");
+    forNode->addChild(move(rangeNode));    
+    forNode->addChild(move(parseBloque()));
+    return forNode;
+}
+
+unique_ptr<NodoAST> ParserRust::parseBloque() {
+    expectLexical("{", "Expected '{' to start block.");
+    auto blockNode = make_unique<NodoAST>("Block", "");
+    
+    while (!isEnd() && actual().valor != "}") {
+        blockNode->addChild(move(parseSentence()));
+    }
+    
+    expectLexical("}", "Expected '}' to end block.");
+    return blockNode;
+}
+
+unique_ptr<NodoAST> ParserRust::parseSentence() {
+    if (actual().valor == "return") 
+    {
+        return parseReturn();
+    } 
+    else if (actual().valor == "let") 
+    {
+        return parseAsig();
+    } 
+    else if (actual().valor == "if") 
+    {
+        return parseIf();
+    } 
+    else if (actual().valor == "for") 
+    {
+        return parseFor();
+    } 
+    else if (actual().valor == "{") 
+    {
+        return parseBloque();
+    }
+    else 
+    {
+        auto exprNode = parseExpre();
+        expectLexical(";", "Expected ';' after expression.");
+        return exprNode;
+    }
+}
+
+unique_ptr<NodoAST> ParserRust::parseReturn() {
+    expectLexical("return", "Expected 'return' keyword.");
+    auto returnNode = make_unique<NodoAST>("Return", "");
+    
+    if (!isEnd() && actual().valor != ";") {
+        returnNode->addChild(move(parseExpre()));
+    }
+    
+    expectLexical(";", "Expected ';' after return statement.");
+    return returnNode;
+}
+
+unique_ptr<NodoAST> ParserRust::parseAsig() {
+    expectLexical("let", "Expected 'let' keyword for assignment.");
+    expectTipo(Tipo::IDENTIFICADOR, "Expected identifier for variable name.");
+
+    string varName = tokens[pos-1].valor;
+    string varType;
+
+    //Para soportar let x: i32 = ....;
+    if (matchLexical(":")) {
+        if (!(matchTipo(Tipo::IDENTIFICADOR) || matchTipo(Tipo::TIPO_PRIMITIVO) || matchTipo(Tipo::TIPO_ESTANDAR)))
+        {
+            throw runtime_error("Expected type after ':' at line " + to_string(actual().line));
+        }
+        varType = tokens[pos-1].valor;
+    }
+    
+    auto asigNode = make_unique<NodoAST>("Assignment", varName + (varType.empty() ? "" : ": " + varType));
+    
+    expectLexical("=", "Expected '=' for assignment.");
+    asigNode->addChild(move(parseExpre()));
+    
+    expectLexical(";", "Expected ';' after assignment.");
+    return asigNode;
+}
+
+unique_ptr<NodoAST> ParserRust::parseExpre() {
+    auto node = parseSum();
+    while (matchLexical("==") || matchLexical("!=") || matchLexical("<") || matchLexical("<=") || matchLexical(">") || matchLexical(">=")) {
+        auto opNode = make_unique<NodoAST>("Operator", tokens[pos-1].valor);
+        opNode->addChild(move(node));
+        opNode->addChild(move(parseSum()));
+        node = move(opNode);
+    }
+    return node;
+}
+
+unique_ptr<NodoAST> ParserRust::parseSum() {
+    auto node = parseMultDiv();
+    while (matchLexical("+") || matchLexical("-")) {
+        auto opNode = make_unique<NodoAST>("Operator", tokens[pos-1].valor);
+        opNode->addChild(move(node));
+        opNode->addChild(move(parseMultDiv()));
+        node = move(opNode);
+    }
+    return node;
+}
+
+unique_ptr<NodoAST> ParserRust::parseMultDiv() {
+    auto node = parseUn();
+    while (matchLexical("*") || matchLexical("/") || matchLexical("%")) {
+        auto opNode = make_unique<NodoAST>("Operator", tokens[pos-1].valor);
+        opNode->addChild(move(node));
+        opNode->addChild(move(parseUn()));
+        node = move(opNode);
+    }
+    return node;
+}
+
+unique_ptr<NodoAST> ParserRust::parseUn() {
+    if (matchLexical("+") || matchLexical("-")) {
+        auto opNode = make_unique<NodoAST>("UnaryOperator", tokens[pos-1].valor);
+        opNode->addChild(move(parsePrim()));
+        return opNode;
+    }
+    return parsePrim();
+}
+
+unique_ptr<NodoAST> ParserRust::parsePrim() {
+    if (actual().tipo == Tipo::NUMERO_ENTERO || actual().tipo == Tipo::NUMERO_DECIMAL || actual().tipo == Tipo::NUMERO_CIENTIFICO) 
+    {
+        auto numNode = make_unique<NodoAST>("Number", actual().valor);
+        avanza();
+        return numNode;
+    } 
+    else if (actual().tipo == Tipo::CADENA) 
+    {
+        auto strNode = make_unique<NodoAST>("String", actual().valor);
+        avanza();
+        return strNode;
+    } 
+    else if (actual().tipo == Tipo::CARACTER) 
+    {
+        auto charNode = make_unique<NodoAST>("Character", actual().valor);
+        avanza();
+        return charNode;
+    } 
+    else if (actual().tipo == Tipo::IDENTIFICADOR) 
+    {
+
+        //Identificador (variable, funcion, macro, namespace/module) String::from...
+        string idValue = actual().valor;
+        avanza();
+
+        //Si encuentra ::
+        if (matchLexical("::"))
+        {
+            expectTipo(Tipo::IDENTIFICADOR, "Expected identifier after '::' for namespace or module access.");
+            idValue += "::" + tokens[pos-1].valor;
+        }
+
+        //Llmada a macro
+        if (matchLexical("!"))
+        {
+            expectLexical("(", "Expected '(' after identifier for function call.");
+            auto callNode = make_unique<NodoAST>("MacroCall", idValue + "!");
+            callNode->addChild(move(parseExpre()));
+            expectLexical(")", "Expected ')' after function call arguments.");
+            return callNode;
+        }
+
+        //Llmada a funcion
+        if (matchLexical("("))
+        {
+            auto callNode = make_unique<NodoAST>("FunctionCall", idValue);
+            if (actual().valor != ")")
+            {
+                callNode->addChild(move(parseExpre()));
+                while (matchLexical(","))
+                {
+                    callNode->addChild(move(parseExpre()));
+                }
+            }
+            expectLexical(")", "Expected ')' after function call arguments.");
+            return callNode;
+        }
+
+        //Identificador simple
+        return make_unique<NodoAST>("Identifier", idValue);
+    } 
+    else if (matchLexical("(")) 
+    {
+        auto exprNode = parseExpre();
+        expectLexical(")", "Expected ')' after expression.");
+        return exprNode;
+    }
+    
+    throw runtime_error("Unexpected token in expression: " + actual().valor + " at line " + to_string(actual().line) + ", column " + to_string(actual().column));
+}
+
+void ParserRust::logAvance(const string* value) const {
+    if (value) {
+        cout << "Avanzando a token: " << *value << endl;
+    } else {
+        cout << "Avanzando al final de los tokens." << endl;
+    }
+
+    cout << "[Parser] " << value << " → Token: " << actual().valor<< " (linea " << actual().line << ")\n";
 }

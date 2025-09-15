@@ -6,20 +6,21 @@ NodoAST::NodoAST(const string& tipe, const string& value){
     this->value=value;
 }
 
-void NodoAST::addChild(NodoAST* child){
-    childs.push_back(child);
+void NodoAST::addChild(unique_ptr<NodoAST> child){
+    childs.push_back(move(child));
 }
 
-void NodoAST::print(int level){
+void NodoAST::print(ostream& out, int level) const{
     for (int i = 0; i < level; i++)
+        out << "  ";
+    out << tipe << (value.empty() ? "" : ": " + value) << "\n";
+    
+    for (const auto& child : childs)
     {
-        cout<<"     ";       
-    }
-    cout<<tipe<<": "<<value<<endl; 
-
-    for (auto child : childs)
-    {
-        child->print(level+1);
+        if(child)
+        {
+            child->print(out, level + 1);
+        }
     }
 }
 

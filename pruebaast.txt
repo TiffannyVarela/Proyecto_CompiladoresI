@@ -1,0 +1,30 @@
+=== AST ===
+Program
+  Function: suma
+    Params
+      Param: a: i32
+      Param: b: i32
+    Block
+      Return
+        Operator: +
+          Identifier: a
+          Identifier: b
+  Function: main
+    Params
+    Block
+      Assignment: x
+        Number: 10
+      Assignment: y
+        Number: 20
+      If
+        Operator: <
+          Identifier: x
+          Identifier: y
+        Block
+          Assignment: resultado
+            FunctionCall: suma
+              Identifier: x
+              Identifier: y
+        Block
+          Return
+=== FIN AST ===

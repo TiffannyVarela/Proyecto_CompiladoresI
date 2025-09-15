@@ -9,6 +9,7 @@ using namespace std;
 Logger::Logger(){
     this -> console = false;
     this -> file = false;
+    this -> filename = "";
 }
 
 Logger::~Logger(){
@@ -93,11 +94,11 @@ bool Logger::validateYesNo(const string& input){
     return (upper=="S" || upper=="N");
 }
 
-bool Logger::askUserConsola(function<bool(const string&)> validator = nullptr){
+bool Logger::askUserConsola(function<bool(const string&)> validator){
     string resp;
     do
     {
-        cout << "Mostrar tokens en consola? (S/N): ";
+        cout << "Mostrar tokens/AST en consola? (S/N): ";
         cin >> resp;
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
         
@@ -111,11 +112,11 @@ bool Logger::askUserConsola(function<bool(const string&)> validator = nullptr){
     } while (true);
 }
 
-bool Logger::askUserArchivo(function<bool(const string&)> validator = nullptr){
+bool Logger::askUserArchivo(function<bool(const string&)> validator, const string& defaultName){
     string resp;
     do
     {
-        cout << "Mostrar tokens en archivo de texto? (S/N): ";
+        cout <<"Desea guardar en un archivo de texto? (S/N): ";
         cin >> resp;
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
         
@@ -128,16 +129,48 @@ bool Logger::askUserArchivo(function<bool(const string&)> validator = nullptr){
 
         if (file)
         {
-            cout << "Ingrese nombre del archivo (ej: tokens.txt): ";
+            cout<< "Ingrese nombre del archivo (ej: "<<defaultName<<") o presione Enter para usar el nombre por defecto: ";
             getline(cin, filename);
-
             if (filename.empty())
             {
-                filename = "Tokens.txt";
+                filename = defaultName; //Por si acaso
             }
         }
         return file;
     } while (true);
+}
+
+bool Logger::askFileName(const string& defaultName){
+    string resp;
+    cout << "Desee usar el nombre por defecto '" << defaultName << "'? (S/N): ";
+    do
+    {
+        cin >> resp;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        resp = toUpper(resp);
+        if (resp != "S" && resp != "N") {
+            cout << "Entrada no válida. Use S o N: ";
+            continue;
+        }
+
+        if (resp == "N")
+        {
+            cout << "Ingrese nombre del archivo (ej: "<<defaultName<<"): ";
+            getline(cin, filename);
+            if (filename.empty())
+            {
+                filename = defaultName;
+            }
+        }
+        else
+        {
+            filename = defaultName; //Por si acaso
+        }
+        file = true;
+        return file;
+        
+    } while (true);
+    
 }
 
 void Logger::setConsoleOutput(bool activo){
@@ -152,3 +185,92 @@ void Logger::setFileOutput(bool activo, const string& filename){
     }  
 }
 
+void Logger::logError(const string& mensaje, int line, int column) {
+
+    string logErrorMsg;
+    if (line >= 0 && column >= 0) {
+        logErrorMsg = "[L:" + to_string(line) + ",C:" + to_string(column) + "] ERROR: " + mensaje;
+    } else {
+        logErrorMsg = "ERROR: " + mensaje;
+    }
+    
+    if (console) {
+        cout << logErrorMsg << endl;
+    }
+    
+    if (!filename.empty())
+    {
+        try
+        {
+            ofstream errorOut(filename, ios::out | ios::app);
+            if (!errorOut.is_open())
+            {
+                throw runtime_error("No se pudo abrir el archivo: " + filename);
+            }
+            errorOut<< "\n[Error] Linea: " << line << ", Columna: " << column << " - " << mensaje << endl;
+            errorOut.close();
+        }
+        catch(const exception& e)
+        {
+            cerr<< "Error al escribir en archivo: " << e.what() <<endl;
+        }
+        
+    }
+    
+}
+
+bool Logger::preguntarAST(function<bool(const string&)> validator){
+    string resp;
+    do
+    {
+        cout << "Mostrar AST en consola? (S/N): ";
+        cin >> resp;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        
+        if (validator && !validator(resp)) {
+            cout << "Entrada no válida. Use S o N.\n";
+            continue;
+        }
+        resp = toUpper(resp);
+        console = (resp == "S");
+        return console;
+    } while (true);
+}
+
+void Logger::logAST(const unique_ptr<NodoAST>& root){
+    if (!root)
+    {
+        logError("AST vacío o no generado.", 0, 0);
+        return;
+    }
+
+    if (console)
+    {
+        cout << "=== AST ===" << endl;
+        root->print(cout);
+        cout << "=== FIN AST ===" << endl;
+    }
+    
+    try
+    {
+        ofstream astOut(filename, ios::out | ios::trunc);
+        if (!astOut.is_open())
+        {
+            throw runtime_error("No se pudo abrir el archivo: " + filename);
+        }
+        else {
+            astOut << "=== AST ===" << endl;
+            root->print(astOut);
+            astOut << "=== FIN AST ===" << endl;
+            astOut.close();
+            cout << "\nAST guardado en '" << filename << "'" <<endl;
+        }
+    }
+    catch(const exception& e)
+    {
+        cerr << "Error al escribir en archivo: " << e.what() <<endl;
+    }
+    
+    
+        
+}

@@ -2,11 +2,13 @@
 #define LOGGER_H
 
 #include "Token.h"
+#include "NodoAST.h"
 #include <string>
 #include <vector>
 #include <fstream>
 #include <map>
 #include <functional>
+#include <limits>
 
 using namespace std;
 
@@ -23,12 +25,17 @@ public:
     Logger();
     void logTokens(const vector<Token>& tokens);
     void inizializar();
-    bool askUserConsola(function<bool(const string&)> validator);
-    bool askUserArchivo(function<bool(const string&)> validator);
+    bool askUserConsola(function<bool(const string&)> validator=nullptr);
+    bool askUserArchivo(function<bool(const string&)> validator, const string& defaultName);
+    bool askFileName(const string& defaultName);
     void setConsoleOutput(bool active);
     void setFileOutput(bool active, const string& filename = "");
     string toUpper(const string& input);
     bool validateYesNo(const string& input);
+    void logError(const string& mensaje, int line, int column);
+
+    bool preguntarAST(function<bool(const string&)> validator=nullptr);
+    void logAST(const unique_ptr<NodoAST>& root);
     ~Logger();
 };
 
