@@ -6,10 +6,12 @@ NodoAST::NodoAST(const string& tipe, const string& value){
     this->value=value;
 }
 
+//Agregar un hijo al nodo
 void NodoAST::addChild(unique_ptr<NodoAST> child){
     childs.push_back(move(child));
 }
 
+//Imprimir el árbol de manera recursiva
 void NodoAST::print(ostream& out, int level) const{
     for (int i = 0; i < level; i++)
         out << "  ";

@@ -8,24 +8,29 @@ ParserRust::ParserRust(const vector<Token>& tokens) : tokens(tokens), pos(0) {}
 
 ParserRust::~ParserRust() {}
 
+// Devuelve el token actual o un token de fin si se ha llegado al final
 const Token& ParserRust::actual() const {
     if (pos < tokens.size()) {
         return tokens[pos];
     }
+    // Retorna un token de fin si se ha llegado al final
     static Token endToken = {Tipo::FIN, "EOF", -1, -1};
     return endToken;
 }
 
+// Verifica si se ha llegado al final de los tokens
 bool ParserRust::isEnd() const {
     return pos >= tokens.size() || actual().tipo == Tipo::FIN;
 }
 
+// Avanza al siguiente token si no se ha llegado al final
 void ParserRust::avanza() {
     if (!isEnd()) {
         pos++;
     }
 }
 
+//Compara el token actual con un valor léxico específico y avanza si coincide
 bool ParserRust::matchLexical(const string& value) {
     if (isEnd())
     {
@@ -38,6 +43,7 @@ bool ParserRust::matchLexical(const string& value) {
     return false;
 }
 
+//Compara el token actual con un tipo específico y avanza si coincide
 bool ParserRust::matchTipo(Tipo tipe) {
     if (isEnd()) 
     {
@@ -50,18 +56,21 @@ bool ParserRust::matchTipo(Tipo tipe) {
     return false;
 }
 
+//Verifica que el token actual coincida con un valor léxico específico, lanza error si no coincide
 void ParserRust::expectLexical(const string& value, const char* errorMsg) {
     if (!matchLexical(value)) {
-        throw runtime_error("Linea: " + to_string(actual().line) + ", Columna: " + to_string(actual().column) + ". Expected token '" + value + "', but found '" + actual().valor + "'. " + errorMsg);
+        throw runtime_error("Linea: " + to_string(actual().line) + ", Columna: " + to_string(actual().column) + ". Token esperado '" + value + "', pero se encontro '" + actual().valor + "'. " + errorMsg);
     }
 }
 
+//Verifica que el token actual coincida con un tipo específico, lanza error si no coincide
 void ParserRust::expectTipo(Tipo tipe, const char* errorMsg) {
     if (!matchTipo(tipe)) {
-        throw runtime_error("Linea: " + to_string(actual().line) + ", Columna: " + to_string(actual().column) + ". Expected token type '" + to_string(static_cast<int>(tipe)) + "', but found '" + actual().valor + "'. " + errorMsg);
+        throw runtime_error("Linea: " + to_string(actual().line) + ", Columna: " + to_string(actual().column) + ". Tipo de token esperado '" + to_string(static_cast<int>(tipe)) + "', pero se encontro '" + actual().valor + "'. " + errorMsg);
     }
 }
 
+// Inicia el análisis sintáctico y devuelve la raíz del AST
 unique_ptr<NodoAST> ParserRust::parse() {
     auto rootNode = parseProgram();
     while(actual().tipo != Tipo::FIN) {
@@ -69,13 +78,14 @@ unique_ptr<NodoAST> ParserRust::parse() {
         if (declNode) {
             rootNode->addChild(move(declNode));
         } else {
-            throw runtime_error("Error parsing declaration at line " + std::to_string(actual().line));
-            avanza(); // Skip to next token if parsing fails
+            throw runtime_error("Error al analizar la declaracion en la linea " + std::to_string(actual().line));
+            avanza(); //Salta el token problemático
         }
     }
     return rootNode;
 }
 
+// Analiza el programa completo
 unique_ptr<NodoAST> ParserRust::parseProgram() {
     auto programNode = make_unique<NodoAST>("Program", "");
     while (!isEnd()) {
@@ -84,13 +94,14 @@ unique_ptr<NodoAST> ParserRust::parseProgram() {
             if (declNode) {
                 programNode->addChild(move(declNode));
             } else {
-                throw runtime_error("Error parsing declaration at line " + std::to_string(actual().line));
+                throw runtime_error("Error al analizar la declaracion en la linea " + to_string(actual().line));
             }
         }         
     }
     return programNode;
 }
 
+//Determina el tipo de declaración y la analiza
 unique_ptr<NodoAST> ParserRust::parseDeclaracion() {
     if (actual().valor == "fn") 
     {
@@ -98,50 +109,54 @@ unique_ptr<NodoAST> ParserRust::parseDeclaracion() {
     } else if (actual().valor == "let") 
     {
         auto asigNode = parseAsig();
-        expectLexical(";", "Expected ';' after assignment.");
+        expectLexical(";", "Esperando ';' despues de la asignacion.");
         return asigNode;
     } else if (actual().valor == "if") 
     {
         return parseIf();
     } else 
     {
-        throw runtime_error("Unexpected declaration: " + actual().valor);
+        throw runtime_error("Declaracion inesperada: " + actual().valor);
     } 
 }
 
+//Analiza una declaración de función
 unique_ptr<NodoAST> ParserRust::parseFunc() {
-    expectLexical("fn", "Expected 'fn' keyword.");
-    expectTipo(Tipo::IDENTIFICADOR, "Expected function name.");
+    expectLexical("fn", "Esperando la palabra clave 'fn' .");
+    expectTipo(Tipo::IDENTIFICADOR, "Esperando nombre de la funcion.");
     string funcName = tokens[pos-1].valor;
 
-    expectLexical("(", "Expected '(' after function name.");
+    expectLexical("(", "Esperando '(' despues del nombre de la funcion.");
     auto parameters = parseParamOpt();
-    expectLexical(")", "Expected ')' after function parameters.");
+    expectLexical(")", "Esperando ')' despues de los parametros de la funcion.");
 
+    //Para soportar funciones con tipo de retorno
     if (matchLexical("->")) {
         if(!(matchTipo(Tipo::IDENTIFICADOR) || matchTipo(Tipo::TIPO_PRIMITIVO) || matchTipo(Tipo::TIPO_ESTANDAR)))
         {
-            throw runtime_error("Expected return type after '->' at line " + to_string(actual().line));
+            throw runtime_error("Esperando tipo de retorno despues de '->' en la linea" + to_string(actual().line));
         }
     }
     
     auto funcNode = make_unique<NodoAST>("Function", funcName);
     funcNode->addChild(move(parameters));
-    funcNode->addChild(move(parseBloque()));
+    funcNode->addChild(move(parseBloque()));//Cuerpo de la funcion
 
     return funcNode;
 }
 
+//Analiza parámetros de función opcionales
 unique_ptr<NodoAST> ParserRust::parseParamOpt() {
     auto paramsNode = make_unique<NodoAST>("Params", "");
     while (actual().tipo == Tipo::IDENTIFICADOR) {
         string paramName = actual().valor;
         avanza();
         string paramType;
+        //Para soportar fn miFuncion(x: i32, y: f64) {...}
         if (matchLexical(":")) {
             if (!(matchTipo(Tipo::IDENTIFICADOR) || matchTipo(Tipo::TIPO_PRIMITIVO) || matchTipo(Tipo::TIPO_ESTANDAR)))
             {
-                throw runtime_error("Expected type after ':' at line " + to_string(actual().line));
+                throw runtime_error("Esperando tipo despues de ':' en la linea " + to_string(actual().line));
             }
             paramType = tokens[pos-1].valor;
         }
@@ -149,26 +164,28 @@ unique_ptr<NodoAST> ParserRust::parseParamOpt() {
         auto paramNode = make_unique<NodoAST>("Param", paramName + (paramType.empty() ? "" : ": " + paramType));
         paramsNode->addChild(move(paramNode));
         
-        if (!matchLexical(",")) {
+        if (!matchLexical(",")) { //Si no hay coma, termina la lista de parámetros
             break;
         }
     }
     return paramsNode;
 }
 
+//Analiza una declaración if-else
 unique_ptr<NodoAST> ParserRust::parseIf() {
-    expectLexical("if", "Expected 'if' keyword.");
-    auto conditionNode = parseExpre();
+    expectLexical("if", "Esperando palabra clave 'if'.");
+    auto conditionNode = parseExpre();//Condición del if
     
     auto ifNode = make_unique<NodoAST>("If", "");
     ifNode->addChild(move(conditionNode));
     
-    ifNode->addChild(move(parseBloque()));
+    ifNode->addChild(move(parseBloque()));//Cuerpo del if
     
+    //Para manejar else if y else
     if (matchLexical("else")) {
-        if (matchLexical("if")) {
+        if (matchLexical("if")) {//else if
             ifNode->addChild(move(parseIf()));
-        } else {
+        } else {//else
             ifNode->addChild(move(parseBloque()));
         }
     }
@@ -176,30 +193,34 @@ unique_ptr<NodoAST> ParserRust::parseIf() {
     return ifNode;
 }
 
+//Analiza una declaración for
 unique_ptr<NodoAST> ParserRust::parseFor() {
-    expectLexical("for", "Expected 'for' keyword.");
-    expectTipo(Tipo::IDENTIFICADOR, "Expected identifier for loop variable.");
+    expectLexical("for", "Esperando la palabra clave 'for'.");
+    expectTipo(Tipo::IDENTIFICADOR, "Esperando identificador para la variable del for.");
     string loopVar = tokens[pos-1].valor;
-    expectLexical("in", "Expected 'in' keyword after loop variable.");
-    auto rangeNode = parseExpre() ;
+    expectLexical("in", "Esperando la palabra clave 'in' despues de la variable del for.");
+    auto rangeNode = parseExpre(); //Rango o colección a iterar
     auto forNode = make_unique<NodoAST>("For", "");
     forNode->addChild(move(rangeNode));    
-    forNode->addChild(move(parseBloque()));
+    forNode->addChild(move(parseBloque()));//Cuerpo del for
     return forNode;
 }
 
+//Analiza un bloque de código delimitado por llaves
 unique_ptr<NodoAST> ParserRust::parseBloque() {
-    expectLexical("{", "Expected '{' to start block.");
+    expectLexical("{", "Esperando '{' para iniciar el bloque.");
     auto blockNode = make_unique<NodoAST>("Block", "");
     
+    //Analiza las sentencias dentro del bloque
     while (!isEnd() && actual().valor != "}") {
         blockNode->addChild(move(parseSentence()));
     }
     
-    expectLexical("}", "Expected '}' to end block.");
+    expectLexical("}", "Esperando '}' para finalizar el bloque.");
     return blockNode;
 }
 
+//Analiza una sentencia individual
 unique_ptr<NodoAST> ParserRust::parseSentence() {
     if (actual().valor == "return") 
     {
@@ -224,26 +245,29 @@ unique_ptr<NodoAST> ParserRust::parseSentence() {
     else 
     {
         auto exprNode = parseExpre();
-        expectLexical(";", "Expected ';' after expression.");
+        expectLexical(";", "Esperando ';' despues de la expresion.");
         return exprNode;
     }
 }
 
+//Analiza una sentencia return
 unique_ptr<NodoAST> ParserRust::parseReturn() {
-    expectLexical("return", "Expected 'return' keyword.");
+    expectLexical("return", "Esperando palabra clave 'return'.");
     auto returnNode = make_unique<NodoAST>("Return", "");
     
+    //Para soportar return; y return expr;
     if (!isEnd() && actual().valor != ";") {
         returnNode->addChild(move(parseExpre()));
     }
     
-    expectLexical(";", "Expected ';' after return statement.");
+    expectLexical(";", "Esperando ';' despues del 'return'.");
     return returnNode;
 }
 
+//Analiza una asignación de variable
 unique_ptr<NodoAST> ParserRust::parseAsig() {
-    expectLexical("let", "Expected 'let' keyword for assignment.");
-    expectTipo(Tipo::IDENTIFICADOR, "Expected identifier for variable name.");
+    expectLexical("let", "Esperando palabra clave 'let' para asignar.");
+    expectTipo(Tipo::IDENTIFICADOR, "Esperando identificador para el nombre de la variable.");
 
     string varName = tokens[pos-1].valor;
     string varType;
@@ -252,20 +276,21 @@ unique_ptr<NodoAST> ParserRust::parseAsig() {
     if (matchLexical(":")) {
         if (!(matchTipo(Tipo::IDENTIFICADOR) || matchTipo(Tipo::TIPO_PRIMITIVO) || matchTipo(Tipo::TIPO_ESTANDAR)))
         {
-            throw runtime_error("Expected type after ':' at line " + to_string(actual().line));
+            throw runtime_error("Esperando tipo despues de ':' en la linea " + to_string(actual().line));
         }
         varType = tokens[pos-1].valor;
     }
     
     auto asigNode = make_unique<NodoAST>("Assignment", varName + (varType.empty() ? "" : ": " + varType));
     
-    expectLexical("=", "Expected '=' for assignment.");
-    asigNode->addChild(move(parseExpre()));
+    expectLexical("=", "Esperando '=' para la asignacion.");
+    asigNode->addChild(move(parseExpre()));//Valor asignado a la variable
     
-    expectLexical(";", "Expected ';' after assignment.");
+    expectLexical(";", "Esperando ';' despues de la asignacion.");
     return asigNode;
 }
 
+// Analiza una expresión completa
 unique_ptr<NodoAST> ParserRust::parseExpre() {
     auto node = parseSum();
     while (matchLexical("==") || matchLexical("!=") || matchLexical("<") || matchLexical("<=") || matchLexical(">") || matchLexical(">=")) {
@@ -277,6 +302,7 @@ unique_ptr<NodoAST> ParserRust::parseExpre() {
     return node;
 }
 
+// Analiza sumas y restas
 unique_ptr<NodoAST> ParserRust::parseSum() {
     auto node = parseMultDiv();
     while (matchLexical("+") || matchLexical("-")) {
@@ -288,6 +314,7 @@ unique_ptr<NodoAST> ParserRust::parseSum() {
     return node;
 }
 
+// Analiza multiplicaciones, divisiones y módulos
 unique_ptr<NodoAST> ParserRust::parseMultDiv() {
     auto node = parseUn();
     while (matchLexical("*") || matchLexical("/") || matchLexical("%")) {
@@ -299,6 +326,7 @@ unique_ptr<NodoAST> ParserRust::parseMultDiv() {
     return node;
 }
 
+// Analiza operadores unarios
 unique_ptr<NodoAST> ParserRust::parseUn() {
     if (matchLexical("+") || matchLexical("-")) {
         auto opNode = make_unique<NodoAST>("UnaryOperator", tokens[pos-1].valor);
@@ -308,6 +336,7 @@ unique_ptr<NodoAST> ParserRust::parseUn() {
     return parsePrim();
 }
 
+// Analiza operandos primarios
 unique_ptr<NodoAST> ParserRust::parsePrim() {
     if (actual().tipo == Tipo::NUMERO_ENTERO || actual().tipo == Tipo::NUMERO_DECIMAL || actual().tipo == Tipo::NUMERO_CIENTIFICO) 
     {
@@ -337,49 +366,50 @@ unique_ptr<NodoAST> ParserRust::parsePrim() {
         //Si encuentra ::
         if (matchLexical("::"))
         {
-            expectTipo(Tipo::IDENTIFICADOR, "Expected identifier after '::' for namespace or module access.");
+            expectTipo(Tipo::IDENTIFICADOR, "Esperando identificador despues de '::' para el acceso al modulo.");
             idValue += "::" + tokens[pos-1].valor;
         }
 
-        //Llmada a macro
+        //Llamada a macro
         if (matchLexical("!"))
         {
-            expectLexical("(", "Expected '(' after identifier for function call.");
+            expectLexical("(", "Esperando '(' despues del identificador para la llamada de la funcion.");
             auto callNode = make_unique<NodoAST>("MacroCall", idValue + "!");
             callNode->addChild(move(parseExpre()));
-            expectLexical(")", "Expected ')' after function call arguments.");
+            expectLexical(")", "Esperando ')' despues de los argumento para llamar a la funcion.");
             return callNode;
         }
 
-        //Llmada a funcion
+        //Llamada a funcion
         if (matchLexical("("))
         {
             auto callNode = make_unique<NodoAST>("FunctionCall", idValue);
             if (actual().valor != ")")
             {
                 callNode->addChild(move(parseExpre()));
-                while (matchLexical(","))
+                while (matchLexical(","))//Si hay más argumentos
                 {
                     callNode->addChild(move(parseExpre()));
                 }
             }
-            expectLexical(")", "Expected ')' after function call arguments.");
+            expectLexical(")", "Esperando ')' despues de los argumento para llamar a la funcion.");
             return callNode;
         }
 
         //Identificador simple
         return make_unique<NodoAST>("Identifier", idValue);
     } 
-    else if (matchLexical("(")) 
+    else if (matchLexical("(")) //Expresión entre paréntesis
     {
         auto exprNode = parseExpre();
-        expectLexical(")", "Expected ')' after expression.");
+        expectLexical(")", "Esperando ')' despues de la expresion.");
         return exprNode;
     }
     
-    throw runtime_error("Unexpected token in expression: " + actual().valor + " at line " + to_string(actual().line) + ", column " + to_string(actual().column));
+    throw runtime_error("Token inesperando en la expresion: " + actual().valor + " en la linea " + to_string(actual().line) + ", columna " + to_string(actual().column));
 }
 
+//Loguea el avance al siguiente token para depuración
 void ParserRust::logAvance(const string* value) const {
     if (value) {
         cout << "Avanzando a token: " << *value << endl;
