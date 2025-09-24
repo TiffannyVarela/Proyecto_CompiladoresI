@@ -11,6 +11,7 @@
 using namespace std;
 
 int main() {
+    Logger logger;
     try
     {
         lectura fileReader("prueba4.rs");
@@ -19,60 +20,54 @@ int main() {
         //vector<char> -> string
         string codigo(fileContent.begin(), fileContent.end());
 
-        //Analisis Lexico
-        LexerRust lexer(codigo);
-        auto tokens = lexer.analiza();
-
-        //Logger
-        Logger logger;
+        //Inicializa el logger
         logger.inizializar();
 
-        //Preguntar al usuario si quiere ver los tokens en consola
-        logger.askUserConsola([&](const string& input)
-        {
-            return logger.validateYesNo(input);
-        });
+        cout<< "=== Inicio de Analisis ===" << endl;
 
-        //Preguntar al usuario si quiere guardar los tokens en un archivo
-        logger.askUserArchivo([&](const string& input){
-            return logger.validateYesNo(input);
-        }, "Tokens.txt");
+        bool logConsola = logger.askUserConsola();
+        logger.setConsoleOutput(logConsola);
 
+        cout<<"---Archivo de Tokens---"<<endl;
+        logger.askFileName("tokens.txt");
+
+        //Analizador Léxico
+        cout<<"---Realizando Analisis Lexico---"<<endl;
+        LexerRust lexer(codigo);
+        auto tokens = lexer.analiza();
         logger.logTokens(tokens);
 
-        //Analisis Sintactico
+        cout<<"---Archivo de AST---"<<endl;
+        logger.askFileName("ast.txt");
+
+        //Analizador Sintáctico
+        cout<<"---Realizando Analisis Sintactico---"<<endl;
         ParserRust parser(tokens);
         auto arbol = parser.parse();
 
-        //Imprimir AST en consola
-        logger.preguntarAST([&](const string& input){
-            return logger.validateYesNo(input);
-        });
-
-        //Guardar archivo AST
-        logger.askUserArchivo([&](const string& input){
-            return logger.validateYesNo(input);
-        }, "AST.txt");
-
-        cout << "\n=== AST ===\n"<<endl;
         if (arbol)
         {
             logger.logAST(arbol);
-            cout << "AST generado correctamente." << endl;
+            if (logger.preguntarAST())
+            {
+                cout<<"---Mostrando AST---"<<endl;
+                arbol->print(cout);
+            }
         }
         else
         {
-            cout << "No se pudo generar el AST." << endl;
-            logger.logError("No se pudo generar el AST.", 0, 0);
+            cout<<"No se pudo generar el AST debido a errores."<<endl;
+            logger.logError("No se pudo generar el AST debido a errores.", 0, 0, "Errores.txt");
         }
+        cout<<"=== Fin de Analisis ==="<<endl;
+        cout<<"Resultados en la carpeta: "<< logger.getCarpetaBase() << endl;
+        
     }
     catch(const exception& e)
     {
         cerr<<"ERROR: " << e.what() << '\n';
+        logger.logError("ERROR: " + string(e.what()), 0, 0);
         return 1;
     }
-    
-
     return 0;
 }
-

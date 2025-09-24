@@ -9,8 +9,4 @@ Programa
         Operador: +
           Numero: 20
           Numero: 30
-  Funcion: main
-    Parametros
-    Bloque
-      Llamada a Funcion: prueba4
 === FIN AST ===
