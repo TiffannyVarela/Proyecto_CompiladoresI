@@ -7,19 +7,20 @@
 using namespace std;
 
 Logger::Logger(){
-    this -> console = false;
-    this -> file = false;
-    this -> filename = "";
+    this -> console = false; //Por defecto no muestra en consola
+    this -> file = false; //Por defecto no guarda en archivo
+    this -> filename = ""; //Por defecto no tiene nombre de archivo
 }
 
 Logger::~Logger(){
-    if (output.is_open())
+    if (output.is_open())//Verifica si el archivo está abierto antes de cerrarlo
     {
-        output.close();
+        output.close(); //Cierra el archivo si está abierto
     }
 }
 
 void Logger::inizializar(){
+    //Inicializa el mapa de tipos a string
     tipeString = {
         {Tipo::CADENA, "CADENA"},
         {Tipo::CARACTER, "CARACTER"},
@@ -40,12 +41,14 @@ void Logger::inizializar(){
     };
 }
 
+// Loguea los tokens en consola y/o archivo según la configuración
 void Logger::logTokens(const vector<Token>& tokens){
-    if (console)
+    if (console) //Si está activado el log en consola
     {
         cout << "=== TOKENS ENCONTRADOS ===" << endl;
-        cout<<tokens.size()<<endl;
+        cout<<tokens.size()<<endl;//Muestra la cantidad de tokens encontrados
 
+        //Muestra cada token con su tipo y valor
         for (const auto& token : tokens)
         {
             cout<< "[L:" << token.line << ",C:" << token.column << "] "<< tipeString[token.tipo] << ": " << token.valor << endl;
@@ -53,15 +56,17 @@ void Logger::logTokens(const vector<Token>& tokens){
         cout << "=== FIN TOKENS ===" << endl;
     }
     
-    if (file)
+    if (file) //Si está activado el log en archivo
     {
         try
         {
+            //Abre el archivo para sobreescribir
             output.open(filename, ios::out | ios::trunc);
             if (!output.is_open())
             {
                 throw runtime_error("No se pudo abrir el archivo: " + filename);
             }
+            //Escribe los tokens en el archivo
             output << "=== TOKENS ENCONTRADOS ===" << endl;
             output<<tokens.size()<<endl;
 
@@ -80,6 +85,7 @@ void Logger::logTokens(const vector<Token>& tokens){
     }   
 }
 
+//Convierte una cadena a mayúsculas
 string Logger::toUpper(const string& input){
     string output = input;
     for (auto& c:output)
@@ -89,11 +95,13 @@ string Logger::toUpper(const string& input){
     return output;
 }
 
+//Valida si la entrada es 'S' o 'N'
 bool Logger::validateYesNo(const string& input){
     string upper = toUpper(input);
     return (upper=="S" || upper=="N");
 }
 
+//Pregunta al usuario si desea loguear en consola
 bool Logger::askUserConsola(function<bool(const string&)> validator){
     string resp;
     do
@@ -112,6 +120,7 @@ bool Logger::askUserConsola(function<bool(const string&)> validator){
     } while (true);
 }
 
+//Pregunta al usuario si desea loguear en archivo y el nombre del archivo
 bool Logger::askUserArchivo(function<bool(const string&)> validator, const string& defaultName){
     string resp;
     do
@@ -133,13 +142,14 @@ bool Logger::askUserArchivo(function<bool(const string&)> validator, const strin
             getline(cin, filename);
             if (filename.empty())
             {
-                filename = defaultName; //Por si acaso
+                filename = defaultName; //Por si acaso un nombre por defecto
             }
         }
         return file;
     } while (true);
 }
 
+//Pregunta al usuario si desea usar el nombre por defecto o ingresar uno nuevo
 bool Logger::askFileName(const string& defaultName){
     string resp;
     cout << "Desee usar el nombre por defecto '" << defaultName << "'? (S/N): ";
@@ -173,10 +183,12 @@ bool Logger::askFileName(const string& defaultName){
     
 }
 
+//Activa o desactiva el log en consola
 void Logger::setConsoleOutput(bool activo){
     console = activo;
 }
 
+//Activa o desactiva el log en archivo y opcionalmente establece el nombre del archivo
 void Logger::setFileOutput(bool activo, const string& filename){
     file = activo;
     if (activo && !filename.empty())
@@ -185,19 +197,21 @@ void Logger::setFileOutput(bool activo, const string& filename){
     }  
 }
 
+//Loguea un mensaje de error con línea y columna opcionales
 void Logger::logError(const string& mensaje, int line, int column) {
 
     string logErrorMsg;
+    // Formatea el mensaje de error
     if (line >= 0 && column >= 0) {
         logErrorMsg = "[L:" + to_string(line) + ",C:" + to_string(column) + "] ERROR: " + mensaje;
     } else {
         logErrorMsg = "ERROR: " + mensaje;
     }
-    
+    //Muestra en consola el error
     if (console) {
         cout << logErrorMsg << endl;
     }
-    
+    // Guarda en archivo el error
     if (!filename.empty())
     {
         try
@@ -219,6 +233,7 @@ void Logger::logError(const string& mensaje, int line, int column) {
     
 }
 
+//Pregunta al usuario si desea mostrar el AST en consola
 bool Logger::preguntarAST(function<bool(const string&)> validator){
     string resp;
     do
@@ -237,6 +252,7 @@ bool Logger::preguntarAST(function<bool(const string&)> validator){
     } while (true);
 }
 
+//Loguea el AST en consola y/o archivo según la configuración
 void Logger::logAST(const unique_ptr<NodoAST>& root){
     if (!root)
     {
@@ -269,8 +285,5 @@ void Logger::logAST(const unique_ptr<NodoAST>& root){
     catch(const exception& e)
     {
         cerr << "Error al escribir en archivo: " << e.what() <<endl;
-    }
-    
-    
-        
+    }      
 }

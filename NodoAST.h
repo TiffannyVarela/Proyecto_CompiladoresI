@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-#include <memory>
+#include <memory> //Para usar unique_ptr (punteros inteligentes)
 
 using namespace std;
 
@@ -12,7 +12,7 @@ class NodoAST
 private:
     string tipe;
     string value;
-    vector<unique_ptr<NodoAST>> childs;
+    vector<unique_ptr<NodoAST>> childs; //Lista de hijos usando punteros unicos
 public:
     NodoAST(const string& tipe, const string& value);
     void addChild(unique_ptr<NodoAST> child);

@@ -7,8 +7,8 @@
 #include <vector>
 #include <fstream>
 #include <map>
-#include <functional>
-#include <limits>
+#include <functional> //Libreria para usar funciones como parametros
+#include <limits> //Libreria para limites numericos
 
 using namespace std;
 
@@ -17,7 +17,7 @@ class Logger
 private:
     string filename;
     ofstream output;
-    map<Tipo, string> tipeString;
+    map<Tipo, string> tipeString; // Mapa para convertir Tipo a string
 
     bool console;
     bool file;

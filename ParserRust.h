@@ -9,12 +9,10 @@
 
 using namespace std;
 
-
-
 class ParserRust {
 private:
     const vector<Token> tokens;
-    size_t pos;
+    size_t pos; // Posición actual en la lista de tokens
 
     const Token& actual() const;
     bool isEnd() const;
@@ -33,15 +31,12 @@ private:
     unique_ptr<NodoAST> parseSentence();
     unique_ptr<NodoAST> parseReturn();
     unique_ptr<NodoAST> parseAsig();
-
     unique_ptr<NodoAST> parseExpre();
     unique_ptr<NodoAST> parseSum();
     unique_ptr<NodoAST> parseMultDiv();
     unique_ptr<NodoAST> parseUn();
     unique_ptr<NodoAST> parsePrim();
-
     void logAvance(const string* value) const;
-
 
 public:
     explicit ParserRust(const vector<Token>& tokens);

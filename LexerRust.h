@@ -5,13 +5,13 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <regex>
+#include <regex> //Libreria para usar expresiones regulares
 
 using namespace std;
 
 struct Reglas
 {
-    regex patron;
+    regex patron; // Expresión regular para el patrón
     Tipo tipo;
 };
 
@@ -28,6 +28,6 @@ private:
     size_t pos;
     int line;
     int column;
-    vector <Reglas> Reglas;
+    vector <Reglas> Reglas; //Listar las reglas con sus patrones y tipos
 };
 #endif // LEXERRUST_H
