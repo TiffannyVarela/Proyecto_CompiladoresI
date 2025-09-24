@@ -21,6 +21,11 @@ private:
     bool matchTipo(Tipo tipe);
     void expectLexical(const string& value, const char* errorMsg);
     void expectTipo(Tipo tipe, const char* errorMsg);
+
+    //Recuperacion de errores
+    void synchronize();
+    
+    //Funciones de análisis sintáctico
     unique_ptr<NodoAST> parseProgram();
     unique_ptr<NodoAST> parseDeclaracion();
     unique_ptr<NodoAST> parseFunc();

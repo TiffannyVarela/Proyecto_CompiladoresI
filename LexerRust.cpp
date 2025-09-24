@@ -11,7 +11,7 @@ LexerRust::LexerRust(const string& codigo)
     //Expresiones regulares y sus tipos correspondientes
         Reglas = {
         // Palabras Reservadas
-        {regex("^(as|async|await|break|const|continue|crate|dyn|extern|false|fn|impl|in|let|mod|move|mut|println|pub|ref|return|self|Self|static|super|trait|true|type|union|unsafe|use|where)\\b"), Tipo::PALABRA_RESERVADA},
+        {regex("^(as|async|await|break|const|continue|crate|dyn|extern|false|fn|impl|in|let|mod|move|mut|pub|ref|return|self|Self|static|super|trait|true|type|union|unsafe|use|where)\\b"), Tipo::PALABRA_RESERVADA},
 
         //Control de flujo
         {regex("^(if|else|while|for|loop|match)\\b"), Tipo::CONTROL_FLUJO},
@@ -39,13 +39,17 @@ LexerRust::LexerRust(const string& codigo)
 
         //Operadores simples y compuestos
         {regex("^(==|!=|<=|>=|&&|\\|\\||\\+=|-=|\\*=|/=|%=|->|::|\\.\\.|\\.\\.=|=>|\\|=|&=|\\^=|<<|>>|<<=|>>=)"), Tipo::OPERADOR},
-        {regex("^[-+*/=<>!&|^.:@?$~#]"), Tipo::OPERADOR},
+        {regex("^[-+*/=<>&|^.:@?$~#]"), Tipo::OPERADOR},
 
         //Puntuación y delimitadores
         {regex("^[,;:(){}\\[\\]]"), Tipo::PUNTUACION},
 
         //Identificadores, nombres de variables, funciones, etc
-        {regex("^[a-zA-Z_][a-zA-Z0-9_]*"), Tipo::IDENTIFICADOR}
+        {regex("^[a-zA-Z_][a-zA-Z0-9_]*"), Tipo::IDENTIFICADOR},
+
+        {regex("^!"), Tipo::SIMBOLO}, // Para el símbolo de macro
+
+        {regex("^(println)\\b"), Tipo::IDENTIFICADOR}, // Para la macro println!
     };
 }
 

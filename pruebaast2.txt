@@ -1,0 +1,16 @@
+=== AST ===
+Programa
+  Funcion: prueba2
+    Parametros
+    Bloque
+      Asignacion: r
+        Operador: +
+          Numero: 2
+          Operador: *
+            Numero: 3
+            Numero: 4
+  Funcion: main
+    Parametros
+    Bloque
+      Llamada a Funcion: prueba2
+=== FIN AST ===
