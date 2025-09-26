@@ -1,24 +1,13 @@
 {
-    "files.associations": {
-        "iostream": "cpp",
-        "vector": "cpp",
-        "string": "cpp",
-        "fstream": "cpp",
-        "regex": "cpp",
-        "functional": "cpp",
-        "memory": "cpp",
-        "stdexcept": "cpp",
-        "limits": "cpp",
-        "algorithm": "cpp",
-        "map": "cpp",
-        "iterator": "cpp",
-        "ostream": "cpp",
-        "sstream": "cpp",
-        "chrono": "cpp",
-        "filesystem": "cpp"
-    },
-    "C_Cpp.errorSquiggles": "disabled",
-    "C_Cpp.default.intelliSenseMode": "gcc-x86",
-    "C_Cpp.default.cppStandard": "c++17",
-    "C_Cpp.default.compilerPath": "g++"
+  "cmake.generator": "MSYS Makefiles",
+  "cmake.configureSettings": {
+    "CMAKE_C_COMPILER": "C:/msys64/mingw64/bin/gcc.exe",
+    "CMAKE_CXX_COMPILER": "C:/msys64/mingw64/bin/g++.exe"
+  },
+  "terminal.integrated.defaultProfile.windows": "Bash (MSYS2)",
+  "cmake.buildDirectory": "${workspaceFolder}/build",
+  "files.associations": {
+    "iostream": "cpp",
+    "ostream": "cpp"
+  }
 }

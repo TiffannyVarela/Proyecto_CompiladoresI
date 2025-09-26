@@ -7,12 +7,15 @@
 #include <vector>
 #include <fstream>
 #include <map>
-#include <functional> //Libreria para usar funciones como parametros
 #include <limits> //Libreria para limites numericos
 #include <memory> // Libreria para smart pointers
 #include <filesystem> // Libreria para manejo de archivos
+#include <chrono> // Libreria para manejo de tiempo y fechas
+#include <sstream> // Libreria para manejo de streams
+#include <iomanip> // Libreria para formateo de fechas
 
 using namespace std;
+namespace fs = std::filesystem;
 
 class Logger
 {
@@ -22,12 +25,19 @@ private:
     map<Tipo, string> tipeString; // Mapa para convertir Tipo a string
 
     bool console;
+    bool consoleAST;
     bool file;
 
     string carpetaBase;
-    void crearCarpetaResult();
-    string obtenerFecha();
-    void logErrorInterno(const string& mensaje, int line, int column, const string& filename);
+    string carpetaPruebas;
+
+    string obtenerFechaHora();
+    bool carpetaExiste(const string& path);
+
+    void logASTInternal(const unique_ptr<NodoAST>& root);
+
+    void crearDirectorio(const string& paths);
+
 public:
     Logger();
     void inizializar();
@@ -40,10 +50,9 @@ public:
     void setFileOutput(bool active, const string& filename = "");
     string toUpper(const string& input);
     bool validateYesNo(const string& input);
-    void logError(const string& mensaje, int line, int column, const string& filename="Errores.txt");
+    void logError(const string& mensaje, int line = -1, int column = -1, const string& nombreArchivoErrores="Errores.txt");
     bool preguntarAST();
     void logAST(const unique_ptr<NodoAST>& root);
-    void logErrorInterno(const string& mensaje, int line, int column, const string& filename);
 
     string getCarpetaBase() const {return carpetaBase;}
     void setCarpetaBase(const string& carpeta) {carpetaBase = carpeta;}

@@ -10,46 +10,36 @@ LexerRust::LexerRust(const string& codigo)
 {
     //Expresiones regulares y sus tipos correspondientes
         Reglas = {
-        // Palabras Reservadas
-        {regex("^(as|async|await|break|const|continue|crate|dyn|extern|false|fn|impl|in|let|mod|move|mut|pub|ref|return|self|Self|static|super|trait|true|type|union|unsafe|use|where)\\b"), Tipo::PALABRA_RESERVADA},
-
-        //Control de flujo
-        {regex("^(if|else|while|for|loop|match)\\b"), Tipo::CONTROL_FLUJO},
-
-        // Tipos primitivos
-        {regex("^(i8|i16|i32|i64|i128|isize|u8|u16|u32|u64|u128|usize|f32|f64|bool|char|\\(\\)|str|struct|enum)\\b"), Tipo::TIPO_PRIMITIVO},
-
-        //Tipos Estandar
-        {regex("^(String|Vec|HashMap|Option|Result|Box|Rc|Arc)\\b"), Tipo::TIPO_ESTANDAR},
-
         //Comentarios
         {regex("^//.*"), Tipo::COMENTARIO},
         {regex("^/\\*[^*]*\\*+([^/*][^*]*\\*+)*/"), Tipo::COMENTARIO},
+        // Palabras Reservadas
+        {regex("^(as|async|await|break|const|continue|crate|dyn|extern|false|fn|impl|in|let|mod|move|mut|pub|ref|return|self|Self|static|super|trait|true|type|union|unsafe|use|where)\\b"), Tipo::PALABRA_RESERVADA},
+        //Control de flujo
+        {regex("^(if|else|while|for|loop|match)\\b"), Tipo::CONTROL_FLUJO},
+        // Tipos primitivos
+        {regex("^(i8|i16|i32|i64|i128|isize|u8|u16|u32|u64|u128|usize|f32|f64|bool|char|\\(\\)|str|struct|enum)\\b"), Tipo::TIPO_PRIMITIVO},
+        //Tipos Estandar
+        {regex("^(String|Vec|HashMap|Option|Result|Box|Rc|Arc)\\b"), Tipo::TIPO_ESTANDAR},
 
+        //Literales
         //Cadenas
         {regex("^\"([^\"\\\\]|\\\\.)*\""), Tipo::CADENA},
-
         //Caracteres
         {regex("^'([^'\\\\]|\\\\.)'"), Tipo::CARACTER},
-
         //Numeros
         {regex("^[0-9]+(\\.[0-9]+)?[eE][+-]?[0-9]+"), Tipo::NUMERO_CIENTIFICO},
         {regex("^[0-9]+\\.[0-9]+"), Tipo::NUMERO_DECIMAL},
         {regex("^[0-9]+"), Tipo::NUMERO_ENTERO},
-
         //Operadores simples y compuestos
         {regex("^(==|!=|<=|>=|&&|\\|\\||\\+=|-=|\\*=|/=|%=|->|::|\\.\\.|\\.\\.=|=>|\\|=|&=|\\^=|<<|>>|<<=|>>=)"), Tipo::OPERADOR},
-        {regex("^[-+*/=<>&|^.:@?$~#]"), Tipo::OPERADOR},
-
+        {regex("^[-+*/=<>&|^.:@?#]"), Tipo::OPERADOR},
         //Puntuación y delimitadores
         {regex("^[,;:(){}\\[\\]]"), Tipo::PUNTUACION},
-
+        {regex("^(println)\\b"), Tipo::IDENTIFICADOR}, // Para la macro println!
         //Identificadores, nombres de variables, funciones, etc
         {regex("^[a-zA-Z_][a-zA-Z0-9_]*"), Tipo::IDENTIFICADOR},
-
-        {regex("^!"), Tipo::SIMBOLO}, // Para el símbolo de macro
-
-        {regex("^(println)\\b"), Tipo::IDENTIFICADOR}, // Para la macro println!
+        {regex("^!"), Tipo::SIMBOLO} // Para el símbolo de macro
     };
 }
 
@@ -93,11 +83,14 @@ vector<Token> LexerRust::analiza() {
                 break;
             }
         }
-
+        Logger logger;
+        
         // Si no se encontró ninguna coincidencia, es un error léxico
         if (!matched) {
-            cerr << "Error: símbolo inválido en L" << line << ", C" << column << ": " <<codigo[pos] << endl;
-            pos++; column++;
+            string msgError = " LEXICO: Simbolo invalido en L" + to_string(line) + ", C" + to_string(column) + ": " + string(1, c);
+            cerr << msgError << endl;
+            //Registrar Error en archivo de Errores.txt
+            logger.logError(msgError, line, column, "Errores.txt");
             // Registrar el error como un token
             string valor(1, c);
             tokens.push_back({Tipo::ERROR, valor, line, column});

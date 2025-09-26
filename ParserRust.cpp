@@ -4,27 +4,60 @@
 
 using namespace std;
 
-ParserRust::ParserRust(const vector<Token>& tokens) : tokens(tokens), pos(0) {}
+ParserRust::ParserRust(const vector<Token>& tokens) : tokens(tokens), pos(0), profundidad(0) {}
 
 ParserRust::~ParserRust() {}
 
 // Recuperación de errores: Avanza hasta el siguiente punto seguro
 void ParserRust::synchronize() {
     // Avanza hasta el siguiente punto seguro (punto y coma, llave de cierre, o inicio de una nueva declaración)
+    if (isEnd()) return;
+
+    // Log inicial (útil para depurar dónde se llama synchronize)
+
+    size_t startPos = pos;
+
+    if (!(actual().valor == "}" && profundidad>0))
+    {
+        avanza();
+    }
+
+    int safety = 0;
     while (!isEnd()) {
-        if (actual().valor == ";" ) 
+        if (actual().valor == ";")
         {
             avanza();
-            break;;
+            return;
         }
-        if (actual().valor =="}")
+        
+        if (actual().valor == "}") 
         {
-            break;
+            if (profundidad > 0)
+            {
+                // Estamos dentro de un bloque: NO consumimos '}', dejamos que el caller lo cierre.
+                return;
+            }
+            else {
+                avanza();
+                return;
+            }
         }
+
         if (actual().valor == "fn" || actual().valor == "let" || actual().valor == "if" || actual().valor == "for")
         {
-            break;
+            return;
         }
+        avanza();
+
+        // Safety guard: si por alguna razón estamos iterando sin fin, rompa el bucle tras muchas iteraciones.
+        if (++safety > 2000) {
+            return;
+        }
+    } 
+
+    // Fallback: si synchronize no avanzó nada (startPos == pos) y no estamos al final,
+    // forzar un avance para asegurar progreso (esto previene loops infinitos).
+    if (pos == startPos && !isEnd()) {
         avanza();
     }
 }
@@ -64,6 +97,24 @@ bool ParserRust::isEnd() const {
 // Avanza al siguiente token si no se ha llegado al final
 void ParserRust::avanza() {
     if (!isEnd()) {
+        //actual() devuelve el token actual a consumir
+        const string &valor = actual().valor;
+
+        //Actualizar la profundidad de las llaves
+        if (valor == "{") {
+            //Consume la llave de apertura y aumenta la profundidad
+            pos++;
+            profundidad++;
+            return;
+        } else if (valor == "}") {
+            //Consume la llave de cierre y disminuye la profundidad
+            pos++;
+            if (profundidad>0)
+            {
+                profundidad--;
+            }
+            return;
+        }
         pos++;
     }
 }
@@ -125,21 +176,40 @@ unique_ptr<NodoAST> ParserRust::parseProgram() {
                         programNode->addChild(move(declNode));
                     } else {
                         cerr<< "Declaracion nula en la linea " << actual().line << endl;
-                        //throw runtime_error("Declaracion nula en la linea " + to_string(actual().line));
+                        //Error a archivo Errores.txt
+                        logger.logError(msg+"Declaracion nula en la linea " + to_string(actual().line), actual().line, actual().column, "Errores.txt");
+                        size_t prev = pos;
                         synchronize(); // Intenta recuperar el error
+                        if (pos == prev && !isEnd())
+                        {
+                            avanza(); // Asegura progreso si synchronize no avanzó
+                        }
                     }
                 } 
                 else {
                     cerr << "Token inesperado en la declaracion: " << actual().valor << " en la linea " << actual().line << endl;
-                    //throw runtime_error("Token inesperado en la declaracion: " + actual().valor + " en la linea " + to_string(actual().line));
+                    logger.logError(msg+"Token inesperado en la declaracion: " + actual().valor, actual().line, actual().column, "Errores.txt");
+                    size_t prev = pos;
                     synchronize();
+                    if (pos == prev && !isEnd())
+                    {
+                        avanza();
+                    }
                 }        
             }
             
             catch(const std::exception& e)
             {
                 cerr << "Error de sintaxis: " << e.what() << endl;
+                logger.logError(msg+"Error de sintaxis: " + string(e.what()), actual().line, actual().column, "Errores.txt");
+                size_t prev = pos;
                 synchronize();
+                if (pos == prev && !isEnd())
+                {
+                    cerr << "No se avanzo en synchronize, forzando avanza() para evitar loop infinito.\n";
+                    logger.logError(msg+"No se avanzo en synchronize, forzando avanza() para evitar loop infinito.", actual().line, actual().column, "Errores.txt");
+                    avanza();
+                }
             }
         }
     return programNode;
@@ -173,16 +243,25 @@ unique_ptr<NodoAST> ParserRust::parseFunc() {
     auto parameters = parseParamOpt();
     expectLexical(")", "Esperando ')' despues de los parametros de la funcion.");
 
+    auto funcNode = make_unique<NodoAST>("Funcion", funcName);
+    funcNode->addChild(move(parameters));
+
     //Para soportar funciones con tipo de retorno
     if (matchLexical("->")) {
         if(!(matchTipo(Tipo::IDENTIFICADOR) || matchTipo(Tipo::TIPO_PRIMITIVO) || matchTipo(Tipo::TIPO_ESTANDAR)))
         {
             throw runtime_error("Esperando tipo de retorno despues de '->' en la linea" + to_string(actual().line));
         }
+        string retornoTipo = tokens[pos-1].valor;
+        auto retNode = make_unique<NodoAST>("Tipo Retorno", retornoTipo);
+        funcNode->addChild(move(retNode));
     }
-    
-    auto funcNode = make_unique<NodoAST>("Funcion", funcName);
-    funcNode->addChild(move(parameters));
+    else {
+        //Tipo de retorno por defecto (void)
+        auto retNode = make_unique<NodoAST>("Tipo Retorno", "void");
+        funcNode->addChild(move(retNode));
+    }
+    //funcNode->addChild(move(parameters));
     funcNode->addChild(move(parseBloque()));//Cuerpo de la funcion
 
     return funcNode;
@@ -263,7 +342,15 @@ unique_ptr<NodoAST> ParserRust::parseBloque() {
         catch(const std::exception& e)
         {
             cerr << "Error de sintaxis en el bloque: " << e.what() << endl;
+            logger.logError(msg+"Error de sintaxis en el bloque: " + string(e.what()), actual().line, actual().column, "Errores.txt");
+            size_t prev = pos;
             synchronize();
+            if (pos == prev && !isEnd())
+            {
+                cerr << "No se avanzo en synchronize, forzando avanza() para evitar loop infinito.\n";
+                logger.logError(msg+"No se avanzo en synchronize, forzando avanza() para evitar loop infinito.", actual().line, actual().column, "Errores.txt");
+                avanza();
+            }
         }
     }
     expectLexical("}", "Esperando '}' para finalizar el bloque.");
@@ -342,7 +429,19 @@ unique_ptr<NodoAST> ParserRust::parseAsig() {
 
 // Analiza una expresión completa
 unique_ptr<NodoAST> ParserRust::parseExpre() {
-    return parseSum();
+    return parseComp();
+}
+
+// Analiza comparaciones
+unique_ptr<NodoAST> ParserRust::parseComp() {
+    auto node = parseSum();
+    while (matchLexical("==") || matchLexical("!=") || matchLexical("<") || matchLexical("<=") || matchLexical(">") || matchLexical(">=")) {
+        auto opNode = make_unique<NodoAST>("Operador Comparacion", tokens[pos-1].valor);
+        opNode->addChild(move(node));
+        opNode->addChild(move(parseSum()));
+        node = move(opNode);
+    }
+    return node;
 }
 
 // Analiza sumas y restas

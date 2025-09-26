@@ -9,8 +9,23 @@ using namespace std;
 Logger::Logger(){
     this -> console = false; //Por defecto no muestra en consola
     this -> file = true; //Por defecto guarda en archivo
-    this -> filename = "output.txt"; //Nombre por defecto
-    this -> carpetaBase = "resultados"; //Carpeta base por defecto
+    this -> consoleAST = false; //Por defecto no muestra el AST en consola
+    this -> carpetaBase = "resultados/"+obtenerFechaHora(); //Carpeta base por defecto
+    this -> filename = carpetaBase + "/output.txt"; //Nombre por defecto del archivo
+
+    //Asegurar la creación de la carpeta base
+    try
+    {
+        if (!fs::exists(carpetaBase))
+        {
+            fs::create_directories(carpetaBase);
+        }
+        
+    }
+    catch(const std::exception& e)
+    {
+        cerr << "Error al crear la carpeta base en el constructor: " << e.what() << endl;
+    }
 }
 
 Logger::~Logger(){
@@ -40,52 +55,56 @@ void Logger::inizializar(){
         {Tipo::TIPO_ESTANDAR, "TIPO_ESTANDAR"},
         {Tipo::TIPO_PRIMITIVO, "TIPO_PRIMITIVO"}
     };
-
-    //Crear la carpeta base si no existe
-    crearCarpetaResult();
 }
 
 //Obtener la fecha
-string Logger::obtenerFecha(){
+string Logger::obtenerFechaHora(){
     auto now = chrono::system_clock::now();
     time_t now_c = chrono::system_clock::to_time_t(now);
     tm tm = *localtime(&now_c);
 
     stringstream ss;
-    ss << carpetaBase <<"/" << (tm.tm_year + 1900) << "-" 
+    ss << /*carpetaBase <<"/" <<*/ (tm.tm_year + 1900) << "-" 
        << setw(2) << setfill('0') << (tm.tm_mon + 1) << "-" 
        << setw(2) << setfill('0') << tm.tm_mday << "_"
        << setw(2) << setfill('0') << tm.tm_hour << "-"
-       << setw(2) << setfill('0') << tm.tm_min << "-"
-       << setw(2) << setfill('0') << tm.tm_sec;
+       << setw(2) << setfill('0') << tm.tm_min;
 
        return ss.str();
 }
 
-//Crea la carpeta para resultados si no existe
-void Logger::crearCarpetaResult(){
-    string carpetaFecha = obtenerFecha();
+bool Logger::carpetaExiste(const string& path){
     try
     {
-        //Crea la carpeta base si no existe
-        if (!filesystem::exists(carpetaBase))
+        if (!fs::exists(path))
         {
-            filesystem::create_directory(carpetaBase);
-            cout << "Carpeta '" << carpetaBase << "' creada para resultados." << endl;
+            fs::create_directories(path);
+            cout << "Carpeta '" << path << "' creada." << endl;
+            return true;
         }
-
-        //Crea la subcarpeta con la fecha y hora actual
-        if (!filesystem::exists(carpetaFecha))
-        {
-            filesystem::create_directory(carpetaFecha);
-            carpetaBase = carpetaFecha; //Actualiza la carpeta base a la de fecha
-            cout << "Carpeta '" << carpetaFecha << "' creada para resultados." << endl;
-        }
-        
+        return true; //La carpeta ya existe       
     }
-    catch(const filesystem::filesystem_error& e)
+    catch(const fs::filesystem_error& e)
     {
-        cerr << "Error al crear la carpeta de resultados: " << e.what() << endl;
+        cerr<< "Error al verificar/crear la carpeta "<<path<<": " << e.what() << endl;
+        return false;
+    }
+    
+}
+
+//Asegura la creacion del directorio
+void Logger::crearDirectorio(const string& paths){
+    try
+    {
+        fs::path path(paths);
+        if (!fs::exists(path.parent_path()))
+        {
+            fs::create_directories(path.parent_path());
+        }
+    }
+    catch(const std::exception& e)
+    {
+        cerr<< "Error al crear directorio para archivo: " << e.what() << endl;
     }
 }
 
@@ -94,7 +113,7 @@ void Logger::logTokens(const vector<Token>& tokens){
     if (console) //Si está activado el log en consola
     {
         cout << "=== TOKENS ENCONTRADOS ===" << endl;
-        cout<<tokens.size()<<endl;//Muestra la cantidad de tokens encontrados
+        cout<<"Total: "<<tokens.size()<<endl;//Muestra la cantidad de tokens encontrados
 
         //Muestra cada token con su tipo y valor
         for (const auto& token : tokens)
@@ -108,15 +127,16 @@ void Logger::logTokens(const vector<Token>& tokens){
     {
         try
         {
+            crearDirectorio(filename);
             //Abre el archivo para sobreescribir
             output.open(filename, ios::out | ios::trunc);
             if (!output.is_open())
             {
-                logError("No se pudo abrir el archivo: " + filename);
+                logError("No se pudo abrir el archivo: " + filename, 0, 0, "Errores.txt");
             }
             //Escribe los tokens en el archivo
             output << "=== TOKENS ENCONTRADOS ===" << endl;
-            output<<tokens.size()<<endl;
+            output<<"Total: "<<tokens.size()<<endl;
 
             for (const auto& token : tokens)
             {
@@ -124,11 +144,11 @@ void Logger::logTokens(const vector<Token>& tokens){
             }
             output << "=== FIN TOKENS ===" << endl;
             output.close();
-            cout << "\nTokens guardados en '" << filename << "'" <<endl;
+            cout << "\nTokens guardados en '" << filename << "'" <<endl<<endl;
         }
         catch(const exception& e)
         {
-            logError("Error al escribir en archivo: " + string(e.what()), 0, 0);
+            logError("Error al escribir en archivo: " + string(e.what()), 0, 0, "Errores.txt");
         }
     }   
 }
@@ -154,7 +174,7 @@ bool Logger::askUserConsola(){
     string resp;
     do
     {
-        cout << "Mostrar tokens/AST en consola? (S/N): ";
+        cout << "Mostrar tokens en consola? (S/N): ";
         cin >> resp;
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
         
@@ -173,17 +193,6 @@ bool Logger::askUserArchivo(const string& defaultName){
     string resp;
     do
     {
-        cout <<"Desea guardar en un archivo de texto? (S/N): ";
-        cin >> resp;
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        
-        if (!validateYesNo(resp)) {
-            cout << "Entrada no válida. Use S o N.\n";
-            continue;
-        }
-        resp = toUpper(resp);
-        file = (resp == "S");
-
         if (file)
         {
             askFileName(defaultName);
@@ -223,7 +232,7 @@ bool Logger::askFileName(const string& defaultName){
             }
         }
         file = true;
-        return file;
+        return true;
         
     } while (true);
     
@@ -244,7 +253,7 @@ void Logger::setFileOutput(bool activo, const string& filename){
 }
 
 //Loguea un mensaje de error con línea y columna opcionales
-void Logger::logError(const string& mensaje, int line, int column, const string& archivoErrores) {
+void Logger::logError(const string& mensaje, int line, int column, const string& nombreArchivoErrores) {
 
     string logMSJError;
     if (line >= 0 && column >= 0) {
@@ -253,10 +262,15 @@ void Logger::logError(const string& mensaje, int line, int column, const string&
         logMSJError = "ERROR: " + mensaje;
     }
 
-    string archivo = carpetaBase + "/" + archivoErrores;
+    if (console)
+    {
+        cerr << logMSJError << endl;
+    }    
 
+    string archivo = carpetaBase + "/" + nombreArchivoErrores;
     try
     {
+        crearDirectorio(archivo);
         ofstream errorOut(archivo, ios::out | ios::app);
         if (errorOut.is_open())
         {
@@ -273,17 +287,10 @@ void Logger::logError(const string& mensaje, int line, int column, const string&
     {
         cerr << "Error al escribir en archivo: " << e.what() <<endl;
     }
-
-    if (console)
-    {
-        cerr << logMSJError << endl;
-    }
-    
-    
 }
 
 //Pregunta al usuario si desea mostrar el AST en consola
-bool Logger::preguntarAST(function<bool(const string&)> validator){
+bool Logger::preguntarAST(){
     string resp;
     do
     {
@@ -296,8 +303,8 @@ bool Logger::preguntarAST(function<bool(const string&)> validator){
             continue;
         }
         resp = toUpper(resp);
-        console = (resp == "S");
-        return console;
+        consoleAST = (resp == "S");
+        return consoleAST;
     } while (true);
 }
 
@@ -305,25 +312,37 @@ bool Logger::preguntarAST(function<bool(const string&)> validator){
 void Logger::logAST(const unique_ptr<NodoAST>& root){
     if (!root)
     {
-        logError("AST vacío o no generado.", 0, 0);
-        return;
-    }
+        logError("AST vacío o no generado.", 0, 0, "Errores.txt");
 
-    if (console)
+        //Crear AST de error
+        auto astError = make_unique<NodoAST>("Programa", "");
+        auto errorNode = make_unique<NodoAST>("Error", "No se pudo generar el AST por errores de sintaxis.");
+        astError->addChild(move(errorNode));
+        logASTInternal(astError);
+        return;
+    }      
+
+    logASTInternal(root);
+}
+
+void Logger::logASTInternal(const unique_ptr<NodoAST>& root){
+    if (consoleAST)
     {
-        cout << "=== AST ===" << endl;
+        cout<< "=== AST ===" << endl;
         root->print(cout);
-        cout << "=== FIN AST ===" << endl;
+        cout<< "=== FIN AST ===" << endl;
     }
 
     if (file)
     {
         try
         {
+            crearDirectorio(filename);
+
             output.open(filename, ios::out | ios::trunc);
             if (!output.is_open())
             {
-                logError("No se pudo abrir el archivo: " + filename);
+                logError("No se pudo abrir el archivo: " + filename, 0, 0, "Errores.txt");
                 return;
             }
             output<< "=== AST ===" << endl;
@@ -334,31 +353,7 @@ void Logger::logAST(const unique_ptr<NodoAST>& root){
         }
         catch(const exception& e)
         {
-            logError("Error al escribir en archivo: " + string(e.what()), 0, 0);
-        }
-    }      
-}
-
-void Logger::logErrorInterno(const string& mensaje, int line, int column, const string& filename){
-    string logMSJError;
-    if (line >= 0 && column >= 0) {
-        logMSJError = "[L:" + to_string(line) + ",C:" + to_string(column) + "] ERROR: " + mensaje;
-    } else {
-        logMSJError = "ERROR: " + mensaje;
-    }
-
-    try
-    {
-        ofstream errorOut(filename, ios::out | ios::app);
-        if (errorOut.is_open())
-        {
-            errorOut<<logMSJError<<endl;
-            errorOut.close();
+            logError("Error al escribir en archivo: " + string(e.what()), 0, 0, "Errores.txt");
         }
     }
-    catch(const exception& e)
-    {
-        cerr<< "Error al escribir en archivo: " << e.what() <<endl;
-    }
-    
 }

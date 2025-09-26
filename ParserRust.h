@@ -3,6 +3,7 @@
 
 #include "Token.h"
 #include "NodoAST.h"
+#include "Logger.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -25,6 +26,12 @@ private:
     //Recuperacion de errores
     void synchronize();
     
+    //Profundidad de las llaves
+    int profundidad;
+
+    Logger logger;
+    string msg = " SINTACTICO: ";
+    
     //Funciones de análisis sintáctico
     unique_ptr<NodoAST> parseProgram();
     unique_ptr<NodoAST> parseDeclaracion();
@@ -37,6 +44,7 @@ private:
     unique_ptr<NodoAST> parseReturn();
     unique_ptr<NodoAST> parseAsig();
     unique_ptr<NodoAST> parseExpre();
+    unique_ptr<NodoAST> parseComp();
     unique_ptr<NodoAST> parseSum();
     unique_ptr<NodoAST> parseMultDiv();
     unique_ptr<NodoAST> parseUn();

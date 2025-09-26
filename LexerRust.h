@@ -2,6 +2,7 @@
 #define LEXERRUST_H
 
 #include "Token.h"
+#include "Logger.h"
 #include <string>
 #include <vector>
 #include <map>

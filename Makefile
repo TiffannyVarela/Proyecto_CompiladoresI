@@ -34,4 +34,6 @@ run: $(OUT)
 
 # Limpiar: elimina ejecutable y objetos
 clean:
-	rm -f $(OUT) $(OBJ)
+	del /Q $(OUT) $(OBJ) 2>nul || true
+
+.PHONY: all run clean

@@ -1,0 +1,38 @@
+[
+{
+  "directory": "C:/Users/tiffa/OneDrive/Documentos/Compiladores/Proyecto_CompiladoresI/build",
+  "command": "C:\\msys64\\mingw64\\bin\\c++.exe -DPROJECT_ROOT=\\\"C:/Users/tiffa/OneDrive/Documentos/Compiladores/Proyecto_CompiladoresI/\\\"  -std=gnu++17 -o CMakeFiles\\CompiladoresRust.dir\\main.cpp.obj -c C:\\Users\\tiffa\\OneDrive\\Documentos\\Compiladores\\Proyecto_CompiladoresI\\main.cpp",
+  "file": "C:/Users/tiffa/OneDrive/Documentos/Compiladores/Proyecto_CompiladoresI/main.cpp",
+  "output": "CMakeFiles/CompiladoresRust.dir/main.cpp.obj"
+},
+{
+  "directory": "C:/Users/tiffa/OneDrive/Documentos/Compiladores/Proyecto_CompiladoresI/build",
+  "command": "C:\\msys64\\mingw64\\bin\\c++.exe -DPROJECT_ROOT=\\\"C:/Users/tiffa/OneDrive/Documentos/Compiladores/Proyecto_CompiladoresI/\\\"  -std=gnu++17 -o CMakeFiles\\CompiladoresRust.dir\\lectura.cpp.obj -c C:\\Users\\tiffa\\OneDrive\\Documentos\\Compiladores\\Proyecto_CompiladoresI\\lectura.cpp",
+  "file": "C:/Users/tiffa/OneDrive/Documentos/Compiladores/Proyecto_CompiladoresI/lectura.cpp",
+  "output": "CMakeFiles/CompiladoresRust.dir/lectura.cpp.obj"
+},
+{
+  "directory": "C:/Users/tiffa/OneDrive/Documentos/Compiladores/Proyecto_CompiladoresI/build",
+  "command": "C:\\msys64\\mingw64\\bin\\c++.exe -DPROJECT_ROOT=\\\"C:/Users/tiffa/OneDrive/Documentos/Compiladores/Proyecto_CompiladoresI/\\\"  -std=gnu++17 -o CMakeFiles\\CompiladoresRust.dir\\LexerRust.cpp.obj -c C:\\Users\\tiffa\\OneDrive\\Documentos\\Compiladores\\Proyecto_CompiladoresI\\LexerRust.cpp",
+  "file": "C:/Users/tiffa/OneDrive/Documentos/Compiladores/Proyecto_CompiladoresI/LexerRust.cpp",
+  "output": "CMakeFiles/CompiladoresRust.dir/LexerRust.cpp.obj"
+},
+{
+  "directory": "C:/Users/tiffa/OneDrive/Documentos/Compiladores/Proyecto_CompiladoresI/build",
+  "command": "C:\\msys64\\mingw64\\bin\\c++.exe -DPROJECT_ROOT=\\\"C:/Users/tiffa/OneDrive/Documentos/Compiladores/Proyecto_CompiladoresI/\\\"  -std=gnu++17 -o CMakeFiles\\CompiladoresRust.dir\\ParserRust.cpp.obj -c C:\\Users\\tiffa\\OneDrive\\Documentos\\Compiladores\\Proyecto_CompiladoresI\\ParserRust.cpp",
+  "file": "C:/Users/tiffa/OneDrive/Documentos/Compiladores/Proyecto_CompiladoresI/ParserRust.cpp",
+  "output": "CMakeFiles/CompiladoresRust.dir/ParserRust.cpp.obj"
+},
+{
+  "directory": "C:/Users/tiffa/OneDrive/Documentos/Compiladores/Proyecto_CompiladoresI/build",
+  "command": "C:\\msys64\\mingw64\\bin\\c++.exe -DPROJECT_ROOT=\\\"C:/Users/tiffa/OneDrive/Documentos/Compiladores/Proyecto_CompiladoresI/\\\"  -std=gnu++17 -o CMakeFiles\\CompiladoresRust.dir\\Logger.cpp.obj -c C:\\Users\\tiffa\\OneDrive\\Documentos\\Compiladores\\Proyecto_CompiladoresI\\Logger.cpp",
+  "file": "C:/Users/tiffa/OneDrive/Documentos/Compiladores/Proyecto_CompiladoresI/Logger.cpp",
+  "output": "CMakeFiles/CompiladoresRust.dir/Logger.cpp.obj"
+},
+{
+  "directory": "C:/Users/tiffa/OneDrive/Documentos/Compiladores/Proyecto_CompiladoresI/build",
+  "command": "C:\\msys64\\mingw64\\bin\\c++.exe -DPROJECT_ROOT=\\\"C:/Users/tiffa/OneDrive/Documentos/Compiladores/Proyecto_CompiladoresI/\\\"  -std=gnu++17 -o CMakeFiles\\CompiladoresRust.dir\\NodoAST.cpp.obj -c C:\\Users\\tiffa\\OneDrive\\Documentos\\Compiladores\\Proyecto_CompiladoresI\\NodoAST.cpp",
+  "file": "C:/Users/tiffa/OneDrive/Documentos/Compiladores/Proyecto_CompiladoresI/NodoAST.cpp",
+  "output": "CMakeFiles/CompiladoresRust.dir/NodoAST.cpp.obj"
+}
+]

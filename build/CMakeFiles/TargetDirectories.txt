@@ -1,0 +1,3 @@
+C:/Users/tiffa/OneDrive/Documentos/Compiladores/Proyecto_CompiladoresI/build/CMakeFiles/CompiladoresRust.dir
+C:/Users/tiffa/OneDrive/Documentos/Compiladores/Proyecto_CompiladoresI/build/CMakeFiles/edit_cache.dir
+C:/Users/tiffa/OneDrive/Documentos/Compiladores/Proyecto_CompiladoresI/build/CMakeFiles/rebuild_cache.dir

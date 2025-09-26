@@ -3,12 +3,12 @@
         {
             "name": "MinGW",
             "includePath": [
-                "${workspaceFolder}"
+                "${workspaceFolder}/**"
             ],
             "defines": [],
-            "compilerPath": "",
+            "compilerPath": "C:/msys64/mingw64/bin/g++.exe",
             "cppStandard": "c++17",
-            "intelliSenseMode": "gcc-x86"
+            "intelliSenseMode": "gcc-x64"
         }
     ],
     "version": 4
