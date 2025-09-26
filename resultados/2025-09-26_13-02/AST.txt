@@ -1,0 +1,32 @@
+=== AST ===
+Programa
+  Funcion: suma
+    Parametros
+      Parametro: a: i32
+      Parametro: b: i32
+    Tipo Retorno: i32
+    Bloque
+      Return
+        Operador: +
+          Identificador: a
+          Identificador: b
+  Funcion: main
+    Parametros
+    Tipo Retorno: void
+    Bloque
+      Asignacion: x
+        Numero: 10
+      Asignacion: y
+        Numero: 20
+      If
+        Operador Comparacion: <
+          Identificador: x
+          Identificador: y
+        Bloque
+          Asignacion: resultado
+            Llamada a Funcion: suma
+              Identificador: x
+              Identificador: y
+        Bloque
+          Return
+=== FIN AST ===

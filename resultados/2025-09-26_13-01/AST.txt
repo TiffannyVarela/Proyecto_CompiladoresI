@@ -1,0 +1,12 @@
+=== AST ===
+Programa
+  Funcion: prueba4_error
+    Parametros
+    Tipo Retorno: void
+    Bloque
+  Funcion: main
+    Parametros
+    Tipo Retorno: void
+    Bloque
+      Llamada a Funcion: prueba4_error
+=== FIN AST ===
