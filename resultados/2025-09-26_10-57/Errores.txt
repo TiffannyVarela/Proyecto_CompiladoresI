@@ -1,0 +1,5 @@
+=== El AST esta incompleto ya que se han encontrado errores dentro del codigo === 
+
+
+[L:3,C:23] ERROR:  LEXICO: Simbolo invalido en L3, C23: ~
+[L:3,C:23] ERROR:  SINTACTICO: Error de sintaxis en el bloque: Linea: 3, Columna: 23. Token esperado ';', pero se encontro '~'. Esperando ';' despues de la asignacion.

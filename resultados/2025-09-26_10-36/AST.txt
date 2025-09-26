@@ -1,0 +1,18 @@
+=== AST ===
+Programa
+  Funcion: prueba2
+    Parametros
+    Tipo Retorno: void
+    Bloque
+      Asignacion: r
+        Operador: +
+          Numero: 2
+          Operador: *
+            Numero: 3
+            Numero: 4
+  Funcion: main
+    Parametros
+    Tipo Retorno: void
+    Bloque
+      Llamada a Funcion: prueba2
+=== FIN AST ===

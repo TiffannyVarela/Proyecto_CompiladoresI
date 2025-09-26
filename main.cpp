@@ -21,7 +21,7 @@ int main() {
         cout<< "=== Inicio de Analisis ===" << endl;
         cout<<"Carpeta de resultados: " << logger.getCarpetaBase() << endl<<endl;
 
-        fs::path ruta = fs::current_path() / "Pruebas" / "prueba4_error.rs";
+        fs::path ruta = fs::current_path() / "Pruebas" / "prueba.rs";
         
         if (!fs::exists(ruta))
         {
@@ -69,7 +69,7 @@ int main() {
             logger.logAST(arbol);
             if (mostrarConsola)
             {
-                cout<<"---AST Mostrando---"<<endl;
+                cout<<"---AST Mostrado---"<<endl;
             }
         }
         else

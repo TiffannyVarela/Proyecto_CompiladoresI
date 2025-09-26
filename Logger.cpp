@@ -271,6 +271,44 @@ void Logger::logError(const string& mensaje, int line, int column, const string&
     try
     {
         crearDirectorio(archivo);
+        bool escriberHeader = false;
+        //Revisar si el archivo existe para agregar header
+        if (!fs::exists(archivo))
+        {
+            escriberHeader = true;
+        }
+        else{
+            try
+            {
+                if (fs::file_size(archivo) == 0)
+                {
+                    escriberHeader = true;
+                }
+            }
+            catch(const std::exception& e)
+            {
+                std::cerr << e.what() << '\n';
+                escriberHeader = false;
+            }
+            
+        }
+        
+        //Escribir header si es necesario
+        if (escriberHeader && !headerErrores)
+        {
+            ofstream headerOut(archivo, ios::out | ios::app);
+            if (headerOut.is_open()){
+                headerOut << "=== El AST esta incompleto ya que se han encontrado errores dentro del codigo === \n\n" << endl;
+                headerOut.close();
+                headerErrores = true;
+            }
+            else
+            {
+                throw runtime_error("No se pudo abrir el archivo para escribir el header: " + archivo);
+            }
+        }
+
+        //Agregar los errores al archivo
         ofstream errorOut(archivo, ios::out | ios::app);
         if (errorOut.is_open())
         {

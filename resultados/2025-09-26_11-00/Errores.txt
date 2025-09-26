@@ -1,0 +1,4 @@
+=== El AST esta incompleto ya que se han encontrado errores dentro del codigo === 
+
+
+[L:3,C:23] ERROR:  SINTACTICO: Error de sintaxis en el bloque: Token inesperando en la expresion: ) en la linea 3, columna 23

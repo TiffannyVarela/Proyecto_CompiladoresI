@@ -1,0 +1,26 @@
+=== AST ===
+Programa
+  Funcion: prueba3_error
+    Parametros
+    Tipo Retorno: void
+    Bloque
+      If
+        Operador Comparacion: <
+          Numero: 1
+          Numero: 2
+        Bloque
+          If
+            Operador Comparacion: <
+              Numero: 3
+              Numero: 4
+            Bloque
+              Return
+              Asignacion: x
+                Numero: 99
+        Bloque
+  Funcion: main
+    Parametros
+    Tipo Retorno: void
+    Bloque
+      Llamada a Funcion: prueba3_error
+=== FIN AST ===

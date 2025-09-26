@@ -38,6 +38,8 @@ private:
 
     void crearDirectorio(const string& paths);
 
+    bool headerErrores = false;
+
 public:
     Logger();
     void inizializar();

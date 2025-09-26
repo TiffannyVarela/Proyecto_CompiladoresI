@@ -1,0 +1,18 @@
+=== AST ===
+Programa
+  Funcion: prueba4
+    Parametros
+    Tipo Retorno: void
+    Bloque
+      Llamada a Macro: println!
+        Cadena de Caracteres: "a"
+        Numero: 10
+        Operador: +
+          Numero: 20
+          Numero: 30
+  Funcion: main
+    Parametros
+    Tipo Retorno: void
+    Bloque
+      Llamada a Funcion: prueba4
+=== FIN AST ===
